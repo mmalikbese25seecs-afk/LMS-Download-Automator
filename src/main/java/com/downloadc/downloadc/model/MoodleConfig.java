@@ -32,4 +32,11 @@ public class MoodleConfig {
     public void setToken(String token) {
         this.token = token;
     }
+
+    // Prints the object for debugging
+    @Override
+    public String toString() {
+        return "MoodleConfig\nUser=" + username + "\nToken= " +
+                (token != null ? "Received" : "Not received");
+    }
 }
