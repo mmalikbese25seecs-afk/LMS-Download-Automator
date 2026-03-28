@@ -1,1 +1,7 @@
 .idea/
+# Compiled Java files
+*.class
+
+# Build directories
+/target/
+/out/
