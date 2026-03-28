@@ -52,7 +52,7 @@ public class MoodleApiClient {
             TrustManager[] trustAllCerts = new TrustManager[]{
                     new X509TrustManager() {
 
-    // Accepts any certificate authority
+                        // Accepts any certificate authority
 
                         public java.security.cert.X509Certificate[] getAcceptedIssuers() {
                             return null;
@@ -140,4 +140,4 @@ public class MoodleApiClient {
     public JsonNode callFunction(String functionName) throws Exception {
         return callFunction(functionName, "");
     }
-    }
+}
