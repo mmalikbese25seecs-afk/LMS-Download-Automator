@@ -1,0 +1,40 @@
+package com.downloadc.downloadc;
+
+import com.downloadc.downloadc.api.AuthService;
+import com.downloadc.downloadc.api.MoodleApiClient;
+import com.downloadc.downloadc.model.MoodleConfig;
+import com.fasterxml.jackson.databind.JsonNode;
+
+//Tests by manual replacing of the credentials
+public class Main {
+
+    public static void main(String[] args) {
+
+        // Create a config object with your credentials
+        //
+        MoodleConfig config = new MoodleConfig("", "");
+        System.out.println("Config created: " + config);
+
+        // Login and get the token
+        AuthService authService = new AuthService();
+        try {
+            String token = authService.getToken(config);
+            config.setToken(token);
+
+            //MANUAL TOKEN CHECK
+
+            System.out.println("MANUAL TOKEN CHECK: " + token);
+
+            MoodleApiClient apiClient = new MoodleApiClient(config);
+            JsonNode userInfo = apiClient.callFunction("core_webservice_get_site_info");
+            System.out.println("\nINfo");
+            System.out.println("Site name: " + userInfo.get("sitename").asText());
+            System.out.println("Logged in as: " + userInfo.get("fullname").asText());
+            System.out.println("User ID: " + userInfo.get("userid").asInt());
+
+        } catch (Exception e) {
+            // In case of error, shows error
+            System.out.println("Something went wrong: " + e.getMessage());
+        }
+    }
+}   Main

@@ -140,3 +140,4 @@ public class MoodleApiClient {
     public JsonNode callFunction(String functionName) throws Exception {
         return callFunction(functionName, "");
     }
+    }
