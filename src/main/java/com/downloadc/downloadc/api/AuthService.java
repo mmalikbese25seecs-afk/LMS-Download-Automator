@@ -8,9 +8,11 @@ import javax.net.ssl.SSLContext;
 import javax.net.ssl.TrustManager;
 import javax.net.ssl.X509TrustManager;
 import java.net.URI;
+import java.net.URLEncoder;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
+import java.nio.charset.StandardCharsets;
 import java.security.SecureRandom;
 
 //AuthService xchanges credentials for a Token.
@@ -18,63 +20,85 @@ import java.security.SecureRandom;
 
 public class AuthService {
 
-     // HttpClient send the login request to Moodle's token endpoint
-     // ObjectMapper converts JSon string into a Java object
-    private final HttpClient httpClient;
-    private final ObjectMapper objectMapper;
+// HttpClient send the login request to Moodle's token endpoint
+// ObjectMapper converts JSon string into a Java object
+private final HttpClient httpClient;
+private final ObjectMapper objectMapper;
 
-    // Constructor
-    public AuthService() {
-        try {
-            // Trust all certificates to bypaas LMS SSL issues
-            TrustManager[] trustAllCerts = new TrustManager[]{
-                    new X509TrustManager() {
-                        public java.security.cert.X509Certificate[] getAcceptedIssuers() { return null; }
-                        public void checkClientTrusted(java.security.cert.X509Certificate[] certs, String authType) { }
-                        public void checkServerTrusted(java.security.cert.X509Certificate[] certs, String authType) { }
+// Constructor
+public AuthService() {
+    try {
+        TrustManager[] trustAllCerts = new TrustManager[]{
+                new X509TrustManager() {
+                    public java.security.cert.X509Certificate[] getAcceptedIssuers() {
+                        return null;
                     }
-            };
-// Configure SSLContext to use the custom TrustManager
-            SSLContext sslContext = SSLContext.getInstance("SSL");
-            sslContext.init(null, trustAllCerts, new SecureRandom());
+                    public void checkClientTrusted(
+                            java.security.cert.X509Certificate[] certs, String authType) {
 
-            // Attach SSL config so requests do not fail
-            this.httpClient = HttpClient.newBuilder()
-                    .sslContext(sslContext)
-                    .build();
+                    }
+                    public void checkServerTrusted(
+                            java.security.cert.X509Certificate[] certs, String authType) {
 
-            this.objectMapper = new ObjectMapper();
+                    }
+                }
+        };
+        SSLContext sslContext = SSLContext.getInstance("SSL");
+        sslContext.init(null, trustAllCerts, new SecureRandom());
 
-        } catch (Exception e) {
-            throw new RuntimeException("Failed to initialize AuthService", e);
-        }
+        this.httpClient = HttpClient.newBuilder()
+                .sslContext(sslContext)
+                .build();
+
+        this.objectMapper = new ObjectMapper();
+
+    } catch (Exception e) {
+        throw new RuntimeException(
+                "Failed to initialize AuthService — SSL setup failed: " + e.getMessage(), e
+        );
     }
+}
 
 // Gets token so password is not sent in every request
 
-    public String getToken(MoodleConfig config) throws Exception {
+public String getToken(MoodleConfig config) {
+    System.out.println("[AuthService] Authenticating user: " + config.getUsername());
 
-        // Construct the token attach username and password as URL parameters
-        String url = config.getBaseUrl()
-                + "/login/token.php"
-                + "?username=" + config.getUsername()
-                + "&password=" + config.getPassword()
-                + "&service=moodle_mobile_app";
+    try {
+        // URL-encode credentials to handle special characters safely
+        String encodedUser = URLEncoder.encode(config.getUsername(), StandardCharsets.UTF_8);
+        String encodedPass = URLEncoder.encode(config.getPassword(), StandardCharsets.UTF_8);
 
-        // Create a  GET request
+        // Construct secure request body
+        String body = String.format("username=%s&password=%s&service=moodle_mobile_app",
+                encodedUser, encodedPass);
+
+        String endpoint = config.getBaseUrl() + "/login/token.php";
+
         HttpRequest request = HttpRequest.newBuilder()
-                .uri(URI.create(url))
-                .GET()
+                .uri(URI.create(endpoint))
+                .header("Content-Type", "application/x-www-form-urlencoded")
+                .POST(HttpRequest.BodyPublishers.ofString(body))
                 .build();
 
-// Execute request and capture response body as a String
         HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
-        JsonNode jsonNode = objectMapper.readTree(response.body());
-//Moodle returns an "error" key if authentication fails
-        if (jsonNode.has("error")) {
-            throw new Exception("Login failed: " + jsonNode.get("error").asText());
+        JsonNode json = objectMapper.readTree(response.body());
+
+        // Error validation from Moodle API response
+        if (json.has("error")) {
+            System.err.println("[AuthService] Authentication Failed: " + json.get("error").asText());
+            return null;
         }
 
-        return jsonNode.get("token").asText();
+        if (json.has("token")) {
+            System.out.println("[AuthService] Login successful. Session token acquired.");
+            return json.get("token").asText();
+        }
+
+    } catch (Exception e) {
+        System.err.println("[AuthService] Connection Error: " + e.getMessage());
     }
+
+    return null;
+}
 }

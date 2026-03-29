@@ -25,34 +25,43 @@ public class CourseService {
         this.config = config;
     }
 
-   //Methods
-    public List<Course> getEnrolledCourses() {
-        List<Course> courses = new ArrayList<>();
-        System.out.println("Getting enrolled courses...");
-                       // Executes APi call
-            String extraParams = "userid=" + config.getUserId();
-            JsonNode response = apiClient.callFunction("core_enrol_get_users_courses", extraParams);
+     //Methods
+     public List<Course> getEnrolledCourses() {
+         List<Course> courses = new ArrayList<>();
+         System.out.println("Getting enrolled courses...");
 
-            // Validate that the response is a JSON array
-            if (response == null || !response.isArray()) {
-                System.err.println("Error(Coursesrvice): Invalid API response format.");
-                return courses;
-            }
+         try {
+             // Executes APi call
+             String extraParams = "userid=" + config.getUserId();
+             JsonNode response = apiClient.callFunction("core_enrol_get_users_courses", extraParams);
 
-            // Map JSON nodes to Course objects
-            for (JsonNode node : response) {
-                int id = node.get("id").asInt();
-                String fullName = node.get("fullname").asText();
-                String shortName = node.get("shortname").asText();
+             // Validate that the response is a JSON array
+             if (response == null || !response.isArray()) {
+                 System.err.println("Error(Coursesrvice): Invalid API response format.");
+                 return courses;
+             }
 
-                // For course summary
-                String summary = node.has("summary") && !node.get("summary").isNull()
-                        ? node.get("summary").asText()
-                        : "";
+             // Map JSON nodes to Course objects
+             for (JsonNode node : response) {
+                 int id           = node.get("id").asInt();
+                 String fullName  = node.get("fullname").asText();
+                 String shortName = node.get("shortname").asText();
 
-                courses.add(new Course(id, fullName, shortName, summary));
-            }
+                 // For course summary
+                 String summary = node.has("summary") && !node.get("summary").isNull()
+                         ? node.get("summary").asText()
+                         : "jhj";
 
-            System.out.println("Success " + courses.size() + " courses.");
-      return courses;
-}
+                 courses.add(new Course(id, fullName, shortName, summary));
+             }
+
+             System.out.println("Success " + courses.size() + " courses.");
+
+         } catch (Exception e) {
+             // Log the specific error and return the empty list to avoid breaking the UI
+             System.err.println("Failed to get courses: " + e.getMessage());
+         }
+
+         return courses;
+     }
+ }
