@@ -10,6 +10,7 @@ public class MoodleConfig {
     private String username;
     private String password;
     private String token;
+    private int userId;
 
     // The URL of the LmS thst is same for every student
     private static final String BASE_URL = "https://lms.nust.edu.pk/portal";
@@ -27,11 +28,13 @@ public class MoodleConfig {
     public String getPassword() { return password; }
     public String getToken()    { return token; }
     public String getBaseUrl()  { return BASE_URL; }
+    public int getUserId() { return userId; }
 
     //SETTER
     public void setToken(String token) {
         this.token = token;
     }
+    public void setUserId(int userId) { this.userId = userId; }
 
     // Prints the object for debugging
     @Override
