@@ -17,6 +17,14 @@ public class CourseFile {
         this.fileType   = fileType;
         this.courseName = courseName;
     }
+
+    // Getters
+    public String getFileName()   { return fileName; }
+    public String getFileUrl()    { return fileUrl; }
+    public long   getFileSize()   { return fileSize; }
+    public String getFileType()   { return fileType; }
+    public String getCourseName() { return courseName; }
+
     @Override
     public String toString() {
         return String.format("CourseFile[%s , %.1f KB , %s",
