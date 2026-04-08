@@ -1,0 +1,710 @@
+<!DOCTYPE html>
+<html lang="en" data-bs-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NUST LMS — Dashboard</title>
+
+    <!-- Bootstrap 5.3.8 -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Bootstrap Icons -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            --bs-body-bg:        #0b0d15;
+            --bs-body-color:     #dde1f0;
+            --surface:           #10121d;
+            --card-bg:           #161929;
+            --border-color:      #222640;
+            --accent:            #4f8ef7;
+            --accent-glow:       rgba(79,142,247,0.18);
+            --red:               #e74c3c;
+            --orange:            #e67e22;
+            --green:             #2dd4bf;
+            --purple:            #a78bfa;
+            --muted:             #5a6080;
+            --font-main:         'DM Sans', sans-serif;
+            --font-mono:         'JetBrains Mono', monospace;
+        }
+
+        * { box-sizing: border-box; }
+
+        body {
+            font-family: var(--font-main);
+            background: var(--bs-body-bg);
+            color: var(--bs-body-color);
+            min-height: 100vh;
+        }
+
+        /* ── Navbar ─────────────────────────────────────────────────── */
+        .topnav {
+            background: var(--surface);
+            border-bottom: 1px solid var(--border-color);
+            height: 58px;
+            position: sticky;
+            top: 0;
+            z-index: 1030;
+        }
+
+        .nav-brand {
+            font-size: 1.05rem;
+            font-weight: 800;
+            letter-spacing: 0.3px;
+            color: var(--bs-body-color);
+            text-decoration: none;
+        }
+
+        .nav-brand span { color: var(--accent); }
+
+        .nav-pill {
+            padding: 5px 14px;
+            border-radius: 8px;
+            font-size: 0.84rem;
+            color: var(--muted);
+            text-decoration: none;
+            border: 1px solid transparent;
+            transition: all 0.15s;
+            font-weight: 500;
+        }
+
+        .nav-pill:hover {
+            background: var(--card-bg);
+            color: var(--bs-body-color);
+            border-color: var(--border-color);
+        }
+
+        .nav-pill.active {
+            background: var(--accent);
+            color: #fff;
+            border-color: var(--accent);
+        }
+
+        .user-avatar {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background: var(--accent);
+            font-size: 0.82rem;
+            font-weight: 800;
+            color: #fff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+
+        .btn-logout {
+            background: transparent;
+            border: 1px solid var(--border-color);
+            color: var(--muted);
+            font-size: 0.8rem;
+            padding: 4px 12px;
+            border-radius: 7px;
+            transition: all 0.15s;
+            font-family: var(--font-main);
+        }
+
+        .btn-logout:hover {
+            border-color: var(--red);
+            color: var(--red);
+            background: rgba(231,76,60,0.07);
+        }
+
+        /* ── Page ────────────────────────────────────────────────────── */
+        .page-wrap {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 28px 20px;
+        }
+
+        /* ── Stat Cards ──────────────────────────────────────────────── */
+        .stat-card {
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 14px;
+            padding: 20px 22px;
+            transition: transform 0.15s, box-shadow 0.15s;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 24px rgba(0,0,0,0.3);
+        }
+
+        .stat-label {
+            font-size: 0.72rem;
+            font-weight: 600;
+            letter-spacing: 0.8px;
+            text-transform: uppercase;
+            color: var(--muted);
+            margin-bottom: 6px;
+        }
+
+        .stat-value {
+            font-size: 2.2rem;
+            font-weight: 800;
+            line-height: 1;
+            font-family: var(--font-mono);
+        }
+
+        .stat-sub {
+            font-size: 0.76rem;
+            color: var(--muted);
+            margin-top: 5px;
+        }
+
+        .val-blue   { color: var(--accent); }
+        .val-red    { color: var(--red); }
+        .val-green  { color: var(--green); }
+        .val-purple { color: var(--purple); }
+
+        /* ── Section Cards ───────────────────────────────────────────── */
+        .section-card {
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 14px;
+            overflow: hidden;
+        }
+
+        .section-head {
+            padding: 14px 20px;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .section-head h2 {
+            font-size: 0.92rem;
+            font-weight: 700;
+            margin: 0;
+            color: var(--bs-body-color);
+        }
+
+        .head-badge {
+            font-size: 0.72rem;
+            background: var(--surface);
+            border: 1px solid var(--border-color);
+            color: var(--muted);
+            padding: 3px 10px;
+            border-radius: 20px;
+            font-weight: 500;
+        }
+
+        /* ── Course Rows ─────────────────────────────────────────────── */
+        .course-row {
+            padding: 13px 20px;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            transition: background 0.12s;
+        }
+
+        .course-row:last-child { border-bottom: none; }
+
+        .course-row:hover { background: rgba(79,142,247,0.04); }
+
+        .course-name {
+            font-size: 0.88rem;
+            font-weight: 600;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            color: var(--bs-body-color);
+        }
+
+        .course-code {
+            font-size: 0.73rem;
+            color: var(--muted);
+            margin-top: 2px;
+            font-family: var(--font-mono);
+        }
+
+        .btn-dl {
+            background: var(--accent);
+            color: #fff;
+            border: none;
+            padding: 5px 14px;
+            border-radius: 7px;
+            font-size: 0.78rem;
+            font-weight: 600;
+            cursor: pointer;
+            white-space: nowrap;
+            transition: all 0.15s;
+            font-family: var(--font-main);
+            flex-shrink: 0;
+        }
+
+        .btn-dl:hover:not(:disabled)  { background: #3a7be0; }
+        .btn-dl:disabled {
+            background: var(--border-color);
+            color: var(--muted);
+            cursor: not-allowed;
+        }
+        .btn-dl.done { background: var(--green); color: #0b0d15; }
+
+        /* ── Deadline Items ──────────────────────────────────────────── */
+        .deadline-item {
+            padding: 12px 18px;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            gap: 11px;
+            align-items: flex-start;
+            transition: background 0.12s;
+        }
+
+        .deadline-item:last-child { border-bottom: none; }
+        .deadline-item:hover { background: rgba(255,255,255,0.02); }
+
+        .dl-dot {
+            width: 9px;
+            height: 9px;
+            border-radius: 50%;
+            margin-top: 5px;
+            flex-shrink: 0;
+        }
+
+        .dl-title {
+            font-size: 0.85rem;
+            font-weight: 600;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            color: var(--bs-body-color);
+        }
+
+        .dl-course {
+            font-size: 0.73rem;
+            color: var(--muted);
+            margin-top: 2px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .dl-when {
+            font-size: 0.72rem;
+            font-weight: 700;
+            white-space: nowrap;
+            flex-shrink: 0;
+            padding: 3px 9px;
+            border-radius: 12px;
+            color: #fff;
+            font-family: var(--font-mono);
+        }
+
+        /* ── Quick Actions ───────────────────────────────────────────── */
+        .action-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 7px;
+            padding: 9px 16px;
+            border-radius: 9px;
+            border: 1px solid var(--border-color);
+            background: var(--card-bg);
+            color: var(--bs-body-color);
+            text-decoration: none;
+            font-size: 0.84rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.15s;
+            font-family: var(--font-main);
+        }
+
+        .action-btn:hover {
+            border-color: var(--accent);
+            color: var(--accent);
+            background: var(--accent-glow);
+        }
+
+        /* ── Urgent Banner ───────────────────────────────────────────── */
+        .urgent-banner {
+            background: rgba(231,76,60,0.08);
+            border: 1px solid rgba(231,76,60,0.28);
+            border-radius: 10px;
+            padding: 12px 18px;
+            color: #f87171;
+            font-size: 0.86rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        /* ── Spinner / Center ────────────────────────────────────────── */
+        .center-screen {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 60vh;
+            gap: 14px;
+            color: var(--muted);
+        }
+
+        .spinner-ring {
+            width: 36px;
+            height: 36px;
+            border: 3px solid var(--border-color);
+            border-top-color: var(--accent);
+            border-radius: 50%;
+            animation: spin 0.7s linear infinite;
+        }
+
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        .empty-msg {
+            padding: 26px 20px;
+            text-align: center;
+            color: var(--muted);
+            font-size: 0.84rem;
+        }
+
+        /* ── Toast ───────────────────────────────────────────────────── */
+        .toast-custom {
+            position: fixed;
+            bottom: 24px;
+            right: 24px;
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            padding: 13px 18px;
+            font-size: 0.85rem;
+            color: var(--bs-body-color);
+            max-width: 300px;
+            z-index: 9999;
+            opacity: 0;
+            transform: translateY(10px);
+            transition: all 0.25s;
+            pointer-events: none;
+            font-family: var(--font-main);
+        }
+
+        .toast-custom.show {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        /* ── Responsive ──────────────────────────────────────────────── */
+        @media (max-width: 768px) {
+            .topnav .nav-links { display: none; }
+            .page-wrap { padding: 18px 14px; }
+        }
+    </style>
+</head>
+<body>
+
+<!-- ── Navbar ──────────────────────────────────────────────────────────── -->
+<nav class="topnav d-flex align-items-center px-4 gap-3">
+
+    <a class="nav-brand me-3" href="/dashboard.html">NUST <span>LMS</span></a>
+
+    <div class="nav-links d-flex gap-1 me-auto">
+        <a href="/dashboard.html" class="nav-pill active">
+            <i class="bi bi-house-fill me-1"></i>Dashboard
+        </a>
+        <a href="/calendar.html" class="nav-pill">
+            <i class="bi bi-calendar3 me-1"></i>Calendar
+        </a>
+    </div>
+
+    <div class="d-flex align-items-center gap-2 ms-auto">
+        <div class="user-avatar" id="avatarLetter">?</div>
+        <span class="d-none d-sm-inline" style="font-size:0.83rem;color:var(--muted)"
+              id="navUserName">Loading...</span>
+        <button class="btn-logout" onclick="logout()">Logout</button>
+    </div>
+
+</nav>
+
+<!-- ── Page Content ─────────────────────────────────────────────────────── -->
+<div class="page-wrap" id="pageContent">
+    <div class="center-screen">
+        <div class="spinner-ring"></div>
+        <p style="font-size:0.88rem">Loading your dashboard...</p>
+    </div>
+</div>
+
+<!-- ── Toast ────────────────────────────────────────────────────────────── -->
+<div class="toast-custom" id="toast"></div>
+
+<!-- Bootstrap 5.3.8 JS -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"></script>
+
+<script>
+    // ── State ─────────────────────────────────────────────────────────────────
+    let dashboardData = null;
+
+    // ── Startup ───────────────────────────────────────────────────────────────
+    document.addEventListener('DOMContentLoaded', async () => {
+
+        // Redirect to login if not authenticated
+        try {
+            const res  = await fetch('/api/auth/status');
+            const data = await res.json();
+            if (!data.loggedIn) { window.location.href = '/index.html'; return; }
+        } catch {
+            window.location.href = '/index.html';
+            return;
+        }
+
+        await loadDashboard();
+    });
+
+    // ── Load ──────────────────────────────────────────────────────────────────
+    async function loadDashboard() {
+        try {
+            const res = await fetch('/api/dashboard/summary');
+
+            if (res.status === 401) { window.location.href = '/index.html'; return; }
+
+            if (!res.ok) {
+                const err = await res.json();
+                showError(err.error || 'Failed to load dashboard.');
+                return;
+            }
+
+            dashboardData = await res.json();
+            render(dashboardData);
+
+        } catch (e) {
+            showError('Connection error: ' + e.message);
+        }
+    }
+
+    // ── Render ────────────────────────────────────────────────────────────────
+    function render(data) {
+
+        const firstName   = data.fullName.split(' ')[0];
+        const courseCount = data.courses.length;
+        const urgentCount = data.urgentCount;
+        const eventCount  = data.upcomingEvents.length;
+        const quizCount   = data.upcomingEvents.filter(e => e.eventType === 'quiz').length;
+
+        // Update navbar
+        document.getElementById('navUserName').textContent  = data.fullName;
+        document.getElementById('avatarLetter').textContent = data.fullName.charAt(0).toUpperCase();
+
+        // Urgent banner — only shown when deadlines exist within 3 days
+        const urgentBanner = urgentCount > 0 ? `
+        <div class="urgent-banner mb-4">
+            <i class="bi bi-exclamation-triangle-fill fs-5"></i>
+            <span>You have <strong>${urgentCount}</strong>
+            deadline${urgentCount > 1 ? 's' : ''} due within the next 3 days.</span>
+            <a href="/calendar.html"
+               class="ms-auto text-decoration-underline"
+               style="color:inherit;white-space:nowrap">View Calendar →</a>
+        </div>` : '';
+
+        // Stat tiles row
+        const stats = `
+        <div class="row g-3 mb-4">
+            <div class="col-6 col-md-3">
+                <div class="stat-card">
+                    <div class="stat-label">Enrolled Courses</div>
+                    <div class="stat-value val-blue">${courseCount}</div>
+                    <div class="stat-sub">${safe(data.siteName)}</div>
+                </div>
+            </div>
+            <div class="col-6 col-md-3">
+                <div class="stat-card">
+                    <div class="stat-label">Urgent Deadlines</div>
+                    <div class="stat-value val-red">${urgentCount}</div>
+                    <div class="stat-sub">Due within 3 days</div>
+                </div>
+            </div>
+            <div class="col-6 col-md-3">
+                <div class="stat-card">
+                    <div class="stat-label">Upcoming Events</div>
+                    <div class="stat-value val-green">${eventCount}</div>
+                    <div class="stat-sub">Next 14 days</div>
+                </div>
+            </div>
+            <div class="col-6 col-md-3">
+                <div class="stat-card">
+                    <div class="stat-label">Quizzes Ahead</div>
+                    <div class="stat-value val-purple">${quizCount}</div>
+                    <div class="stat-sub">Next 14 days</div>
+                </div>
+            </div>
+        </div>`;
+
+        // Quick action buttons
+        const actions = `
+        <div class="d-flex flex-wrap gap-2 mb-4">
+            <a href="/calendar.html" class="action-btn">
+                <i class="bi bi-calendar3"></i> Open Calendar
+            </a>
+            <button class="action-btn" onclick="downloadAll()">
+                <i class="bi bi-download"></i> Download All Files
+            </button>
+            <button class="action-btn" onclick="loadDashboard()">
+                <i class="bi bi-arrow-clockwise"></i> Refresh
+            </button>
+        </div>`;
+
+        // Course rows
+        const courseRows = data.courses.length === 0
+            ? '<div class="empty-msg">No enrolled courses found.</div>'
+            : data.courses.map(c => `
+            <div class="course-row" id="course-row-${c.id}">
+                <div style="flex:1;min-width:0">
+                    <div class="course-name">${safe(c.fullName)}</div>
+                    <div class="course-code">${safe(c.shortName)}</div>
+                </div>
+                <button class="btn-dl"
+                        id="btn-${c.id}"
+                        onclick="downloadCourse(${c.id}, '${safe(c.shortName)}', this)">
+                    <i class="bi bi-download me-1"></i>Download
+                </button>
+            </div>`).join('');
+
+        // Deadline items
+        const deadlineItems = data.upcomingEvents.length === 0
+            ? '<div class="empty-msg">No upcoming deadlines in the next 14 days 🎉</div>'
+            : data.upcomingEvents.map(e => {
+                const daysLeft = Math.ceil(e.timeUntilDue / 86400);
+                const label    = daysLeft === 0 ? 'Today'
+                    : daysLeft === 1 ? 'Tomorrow'
+                        : `${daysLeft}d`;
+                return `
+            <div class="deadline-item">
+                <div class="dl-dot" style="background:${e.color}"></div>
+                <div style="flex:1;min-width:0">
+                    <div class="dl-title">${safe(e.title)}</div>
+                    <div class="dl-course">${safe(e.courseName)}</div>
+                </div>
+                <span class="dl-when" style="background:${e.color}">${label}</span>
+            </div>`;
+            }).join('');
+
+        // Assemble full page
+        document.getElementById('pageContent').innerHTML = `
+        <div class="mb-4">
+            <h1 style="font-size:1.45rem;font-weight:800">
+                Good day, ${safe(firstName)} 👋
+            </h1>
+            <p style="font-size:0.88rem;color:var(--muted);margin-top:4px">
+                Here's your academic overview for today.
+            </p>
+        </div>
+
+        ${urgentBanner}
+        ${stats}
+        ${actions}
+
+        <div class="row g-4">
+            <div class="col-12 col-lg-7">
+                <div class="section-card">
+                    <div class="section-head">
+                        <h2><i class="bi bi-journals me-2"></i>Enrolled Courses</h2>
+                        <span class="head-badge">${courseCount} courses</span>
+                    </div>
+                    ${courseRows}
+                </div>
+            </div>
+            <div class="col-12 col-lg-5">
+                <div class="section-card">
+                    <div class="section-head">
+                        <h2><i class="bi bi-alarm me-2"></i>Upcoming Deadlines</h2>
+                        <a href="/calendar.html"
+                           style="font-size:0.78rem;color:var(--accent);text-decoration:none">
+                            View all →
+                        </a>
+                    </div>
+                    ${deadlineItems}
+                </div>
+            </div>
+        </div>`;
+    }
+
+    // ── Download single course ────────────────────────────────────────────────
+    async function downloadCourse(courseId, shortName, btn) {
+        btn.disabled   = true;
+        btn.innerHTML  = '<span class="spinner-border spinner-border-sm me-1"></span>Downloading...';
+
+        try {
+            const res  = await fetch(`/api/download/${courseId}`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ shortName })
+            });
+            const data = await res.json();
+
+            if (res.ok) {
+                btn.innerHTML = `<i class="bi bi-check-lg me-1"></i>Done (${data.downloaded})`;
+                btn.classList.add('done');
+                showToast(`Downloaded ${data.downloaded} file(s) from ${shortName}.`
+                    + (data.skipped > 0 ? ` ${data.skipped} already existed.` : ''));
+            } else {
+                btn.innerHTML = '<i class="bi bi-x-lg me-1"></i>Failed';
+                btn.disabled  = false;
+                showToast('Download failed: ' + (data.error || 'unknown error'), true);
+            }
+
+        } catch (e) {
+            btn.innerHTML = '<i class="bi bi-x-lg me-1"></i>Error';
+            btn.disabled  = false;
+            showToast('Connection error: ' + e.message, true);
+        }
+    }
+
+    // ── Download all courses sequentially ────────────────────────────────────
+    async function downloadAll() {
+        if (!dashboardData || !dashboardData.courses.length) return;
+        showToast('Starting download for all courses...');
+        for (const course of dashboardData.courses) {
+            const btn = document.getElementById(`btn-${course.id}`);
+            if (btn && !btn.classList.contains('done')) {
+                await downloadCourse(course.id, course.shortName, btn);
+            }
+        }
+        showToast('All downloads complete!');
+    }
+
+    // ── Logout ────────────────────────────────────────────────────────────────
+    async function logout() {
+        await fetch('/api/auth/logout', { method: 'POST' });
+        window.location.href = '/index.html';
+    }
+
+    // ── Helpers ───────────────────────────────────────────────────────────────
+
+    // Escapes HTML to prevent XSS when injecting user data into innerHTML
+    function safe(str) {
+        if (!str) return '';
+        return str
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;');
+    }
+
+    function showError(msg) {
+        document.getElementById('pageContent').innerHTML = `
+        <div class="center-screen">
+            <i class="bi bi-exclamation-circle" style="font-size:2rem;color:var(--red)"></i>
+            <p style="color:var(--red)">${safe(msg)}</p>
+            <button class="btn-dl" onclick="loadDashboard()">
+                <i class="bi bi-arrow-clockwise me-1"></i>Retry
+            </button>
+        </div>`;
+    }
+
+    let toastTimer = null;
+
+    function showToast(message, isError = false) {
+        const el = document.getElementById('toast');
+        el.textContent = message;
+        el.style.borderColor = isError ? 'var(--red)' : 'var(--border-color)';
+        el.classList.add('show');
+        if (toastTimer) clearTimeout(toastTimer);
+        toastTimer = setTimeout(() => el.classList.remove('show'), 3500);
+    }
+</script>
+</body>
+</html>
