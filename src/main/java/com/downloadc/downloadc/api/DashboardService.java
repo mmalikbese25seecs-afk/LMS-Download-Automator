@@ -43,3 +43,31 @@ public class DashboardService {
                 .sorted((a, b) -> Long.compare(a.getTimeUntilDue(), b.getTimeUntilDue()))
                 .limit(5)
                 .toList();
+        
+                // Count events due within 3 days for the urgent badge
+        long urgentCount = allEvents.stream()
+                .filter(e -> e.getTimeUntilDue() > 0
+                        && e.getTimeUntilDue() <= 3 * 86_400L)
+                .count();
+
+        System.out.printf("[DashboardService] Built summary: %d courses, " +
+                        "%d upcoming events, %d urgent%n",
+                courses.size(), upcomingFive.size(), urgentCount);
+
+        return new DashboardSummary(
+                fullName, siteName,
+                courses,
+                upcomingFive,
+                urgentCount
+        );
+    }
+
+    // Immutable data container returned by getSummary — Jackson serializes it automatically
+    public record DashboardSummary(
+            String              fullName,
+            String              siteName,
+            List<Course>        courses,
+            List<CalendarEvent> upcomingEvents,
+            long                urgentCount
+    ) {}
+}
