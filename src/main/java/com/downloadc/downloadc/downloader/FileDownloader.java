@@ -1,6 +1,8 @@
 package com.downloadc.downloadc.downloader;
 
+import com.downloadc.downloadc.api.DownloadHistoryService;
 import com.downloadc.downloadc.model.CourseFile;
+import com.downloadc.downloadc.model.DownloadRecord;
 import com.downloadc.downloadc.model.MoodleConfig;
 
 import javax.net.ssl.SSLContext;
@@ -17,95 +19,112 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.security.SecureRandom;
 
-//Saves a course file from Moodle to the local filesystem
+// class to download files and save them locally
 public class FileDownloader {
+
     private final HttpClient httpClient;
     private final MoodleConfig config;
+    private final DownloadHistoryService historyService;
+
     private static final String DOWNLOAD_ROOT = "downloads";
 
-    public FileDownloader(MoodleConfig config) {
+    // constructor
+    public FileDownloader(MoodleConfig config, DownloadHistoryService historyService) {
         this.config = config;
+        this.historyService = historyService;
+
         try {
-            // Configure SSL context to bypass certificate validation for specific LMS environments
-            TrustManager[] trustAllCerts = new TrustManager[]{
-                    new X509TrustManager() {
-                        public java.security.cert.X509Certificate[] getAcceptedIssuers() { return null; }
-                        public void checkClientTrusted(java.security.cert.X509Certificate[] c, String a) {}
-                        public void checkServerTrusted(java.security.cert.X509Certificate[] c, String a) {}
-                    }
+            // trust all SSL 
+            TrustManager[] trustAll = new TrustManager[]{
+                new X509TrustManager() {
+                    public java.security.cert.X509Certificate[] getAcceptedIssuers() { return null; }
+                    public void checkClientTrusted(java.security.cert.X509Certificate[] c, String a) {}
+                    public void checkServerTrusted(java.security.cert.X509Certificate[] c, String a) {}
+                }
             };
+
             SSLContext ssl = SSLContext.getInstance("SSL");
-            ssl.init(null, trustAllCerts, new SecureRandom());
-            this.httpClient = HttpClient.newBuilder().sslContext(ssl).build();
+            ssl.init(null, trustAll, new SecureRandom());
+
+            this.httpClient = HttpClient.newBuilder().sslContext(ssl)
+                    .build();
+
         } catch (Exception e) {
-            throw new RuntimeException("FileDownloader SSL init failed: " + e.getMessage(), e);
+            throw new RuntimeException("SSL setup failed : " + e.getMessage(), e);
         }
     }
 
-    // Downloads a file to a structured local directory.
+    // download a file
+    // return true if downloaded, false if already exists
     public boolean download(CourseFile courseFile) throws Exception {
 
-        //senitizeName() removes characters that are illegal in file name
-        String safeCourse = sanitizeName(courseFile.getCourseName());
-        String safeFile   = sanitizeName(courseFile.getFileName());
+        String safeCourse = sanitize(courseFile.getCourseName());
+        String safeFile = sanitize(courseFile.getFileName());
 
         Path courseFolder = Paths.get(DOWNLOAD_ROOT, safeCourse);
-        Path destination  = courseFolder.resolve(safeFile);
+        Path destination = courseFolder.resolve(safeFile);
 
-        // Skip download if the file already exists
+        // skip if already exists
         if (Files.exists(destination)) {
             System.out.println("Skipped: " + safeFile);
             return false;
         }
 
-        //Create the course folder
         Files.createDirectories(courseFolder);
 
-        // Append authentication token to the Moodle file URL
-        String fileUrl = courseFile.getFileUrl();
-        String authenticatedUrl = fileUrl.contains("?")
-                ? fileUrl + "&token=" + config.getToken()
-                : fileUrl + "?token="  + config.getToken();
+        // Add token to url
+        String url = courseFile.getFileUrl();
 
-        System.out.printf("Downloading: %-40s → %s%n",
-                safeFile, courseFolder);
+        String authenticatedUrl = url.contains("?")? url + "&token=" + config.getToken()
+                : url + "?token=" + config.getToken();
 
-        // Build and send the download request.
-        HttpRequest request = HttpRequest.newBuilder()
-                .uri(URI.create(authenticatedUrl))
+        System.out.println("Downloading : " + safeFile);
+
+        HttpRequest request = HttpRequest.newBuilder().uri(URI.create(authenticatedUrl))
                 .GET()
                 .build();
 
         HttpResponse<InputStream> response = httpClient.send(
-                request,
-                HttpResponse.BodyHandlers.ofInputStream()
+                request, HttpResponse.BodyHandlers.ofInputStream()
         );
 
-        // Checks for error
         if (response.statusCode() != 200) {
-            throw new Exception("Download failed for " + safeFile
-                    + "HTTP " + response.statusCode());
+            throw new Exception("HTTP " + response.statusCode());
         }
 
+        long bytesWritten = 0;
 
-        // 9.5 KB of memory chunks at a time is faster than moving it once
-        try (InputStream in       = response.body();
-             OutputStream out     = Files.newOutputStream(destination)) {
+        // write file to disk
+        try (InputStream in = response.body();
+             OutputStream out = Files.newOutputStream(destination)) {
 
-            byte[] buffer         = new byte[9500];
-            int    bytesRead;
+            byte[] buffer = new byte[8192];
+            int read;
 
-            while ((bytesRead = in.read(buffer)) != -1) {
-                out.write(buffer, 0, bytesRead);
+            while ((read = in.read(buffer)) != -1) {
+                out.write(buffer, 0, read);
+                bytesWritten += read;
             }
         }
 
-        System.out.println("[FileDownloader] Saved: " + destination);
+        System.out.println("Saved: " + destination + " (" + bytesWritten + " bytes)");
+
+        // Save record in history
+        DownloadRecord record = new DownloadRecord(
+                safeFile,
+                courseFile.getCourseName(),
+                safeCourse,
+                bytesWritten,
+                destination.toString()
+        );
+
+        historyService.addRecord(record);
+
         return true;
     }
 
-    // Removes illegal characters from strings for safe filesystem usage
-    private String sanitizeName(String name) {
-        return name.replaceAll("[\\\\/:*?\"<>|]", "_").trim();
+    // Remove invalid characters from file/folder name
+    private String sanitize(String name) {
+        return name.replaceAll("[\/:*?\"<>|]\\\", "_").trim();
     }
 }
