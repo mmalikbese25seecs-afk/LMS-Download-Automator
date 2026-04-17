@@ -39,7 +39,7 @@
             min-height: 100vh;
         }
 
-        /* ── Navbar ─────────────────────────────────────────────────── */
+        /*  Navbar  */
         .topnav {
             background: var(--surface);
             border-bottom: 1px solid var(--border-color);
@@ -113,14 +113,14 @@
             background: rgba(231,76,60,0.07);
         }
 
-        /* ── Page ────────────────────────────────────────────────────── */
+        /* Page */
         .page-wrap {
             max-width: 1200px;
             margin: 0 auto;
             padding: 28px 20px;
         }
 
-        /* ── Stat Cards ──────────────────────────────────────────────── */
+        /* Stat Cards */
         .stat-card {
             background: var(--card-bg);
             border: 1px solid var(--border-color);
@@ -161,7 +161,7 @@
         .val-green  { color: var(--green); }
         .val-purple { color: var(--purple); }
 
-        /* ── Section Cards ───────────────────────────────────────────── */
+        /* Section Cards */
         .section-card {
             background: var(--card-bg);
             border: 1px solid var(--border-color);
@@ -194,7 +194,7 @@
             font-weight: 500;
         }
 
-        /* ── Course Rows ─────────────────────────────────────────────── */
+        /* Course Rows */
         .course-row {
             padding: 13px 20px;
             border-bottom: 1px solid var(--border-color);
@@ -248,7 +248,7 @@
         }
         .btn-dl.done { background: var(--green); color: #0b0d15; }
 
-        /* ── Deadline Items ──────────────────────────────────────────── */
+        /* Deadline Items */
         .deadline-item {
             padding: 12px 18px;
             border-bottom: 1px solid var(--border-color);
@@ -298,7 +298,7 @@
             font-family: var(--font-mono);
         }
 
-        /* ── Quick Actions ───────────────────────────────────────────── */
+        /* Quick Actions */
         .action-btn {
             display: inline-flex;
             align-items: center;
@@ -322,7 +322,7 @@
             background: var(--accent-glow);
         }
 
-        /* ── Urgent Banner ───────────────────────────────────────────── */
+        /* Urgent Banner */
         .urgent-banner {
             background: rgba(231,76,60,0.08);
             border: 1px solid rgba(231,76,60,0.28);
@@ -335,7 +335,7 @@
             gap: 10px;
         }
 
-        /* ── Spinner / Center ────────────────────────────────────────── */
+        /* Spinner / Center */
         .center-screen {
             display: flex;
             flex-direction: column;
@@ -364,7 +364,7 @@
             font-size: 0.84rem;
         }
 
-        /* ── Toast ───────────────────────────────────────────────────── */
+        /* Toast */
         .toast-custom {
             position: fixed;
             bottom: 24px;
@@ -389,7 +389,7 @@
             transform: translateY(0);
         }
 
-        /* ── Responsive ──────────────────────────────────────────────── */
+        /* Responsive */
         @media (max-width: 768px) {
             .topnav .nav-links { display: none; }
             .page-wrap { padding: 18px 14px; }
@@ -398,18 +398,16 @@
 </head>
 <body>
 
-<!-- ── Navbar ──────────────────────────────────────────────────────────── -->
+<!-- Navbar -->
 <nav class="topnav d-flex align-items-center px-4 gap-3">
 
     <a class="nav-brand me-3" href="/dashboard.html">NUST <span>LMS</span></a>
 
-    <div class="nav-links d-flex gap-1 me-auto">
-        <a href="/dashboard.html" class="nav-pill active">
-            <i class="bi bi-house-fill me-1"></i>Dashboard
-        </a>
-        <a href="/calendar.html" class="nav-pill">
-            <i class="bi bi-calendar3 me-1"></i>Calendar
-        </a>
+    <div class="nav-links">
+        <a href="/dashboard.html"  class="nav-link active">🏠 Dashboard</a>
+        <a href="/calendar.html"   class="nav-link">📅 Calendar</a>
+        <a href="/files.html"      class="nav-link">📂 Files</a>
+        <a href="/summarizer.html" class="nav-link">🤖 Summarizer</a>
     </div>
 
     <div class="d-flex align-items-center gap-2 ms-auto">
@@ -421,7 +419,7 @@
 
 </nav>
 
-<!-- ── Page Content ─────────────────────────────────────────────────────── -->
+<!-- Page Content -->
 <div class="page-wrap" id="pageContent">
     <div class="center-screen">
         <div class="spinner-ring"></div>
@@ -429,17 +427,17 @@
     </div>
 </div>
 
-<!-- ── Toast ────────────────────────────────────────────────────────────── -->
+<!-- Toast -->
 <div class="toast-custom" id="toast"></div>
 
 <!-- Bootstrap 5.3.8 JS -->
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"></script>
 
 <script>
-    // ── State ─────────────────────────────────────────────────────────────────
+    // State
     let dashboardData = null;
 
-    // ── Startup ───────────────────────────────────────────────────────────────
+    // Startup
     document.addEventListener('DOMContentLoaded', async () => {
 
         // Redirect to login if not authenticated
@@ -455,7 +453,7 @@
         await loadDashboard();
     });
 
-    // ── Load ──────────────────────────────────────────────────────────────────
+    // Load
     async function loadDashboard() {
         try {
             const res = await fetch('/api/dashboard/summary');
@@ -476,7 +474,7 @@
         }
     }
 
-    // ── Render ────────────────────────────────────────────────────────────────
+    // Render
     function render(data) {
 
         const firstName   = data.fullName.split(' ')[0];
@@ -489,7 +487,7 @@
         document.getElementById('navUserName').textContent  = data.fullName;
         document.getElementById('avatarLetter').textContent = data.fullName.charAt(0).toUpperCase();
 
-        // Urgent banner — only shown when deadlines exist within 3 days
+        // Urgent banner, only shown when deadlines exist within 3 days
         const urgentBanner = urgentCount > 0 ? `
         <div class="urgent-banner mb-4">
             <i class="bi bi-exclamation-triangle-fill fs-5"></i>
@@ -535,17 +533,13 @@
 
         // Quick action buttons
         const actions = `
-        <div class="d-flex flex-wrap gap-2 mb-4">
-            <a href="/calendar.html" class="action-btn">
-                <i class="bi bi-calendar3"></i> Open Calendar
-            </a>
-            <button class="action-btn" onclick="downloadAll()">
-                <i class="bi bi-download"></i> Download All Files
-            </button>
-            <button class="action-btn" onclick="loadDashboard()">
-                <i class="bi bi-arrow-clockwise"></i> Refresh
-            </button>
-        </div>`;
+    <div class="quick-actions">
+        <a href="/calendar.html"   class="action-btn"><span class="icon">📅</span> Calendar</a>
+        <a href="/files.html"      class="action-btn"><span class="icon">📂</span> File Manager</a>
+        <a href="/summarizer.html" class="action-btn"><span class="icon">🤖</span> Summarizer</a>
+        <button class="action-btn" onclick="downloadAll()"><span class="icon">⬇️</span> Download All</button>
+        <button class="action-btn" onclick="loadDashboard()"><span class="icon">🔄</span> Refresh</button>
+    </div>`;
 
         // Course rows
         const courseRows = data.courses.length === 0
@@ -622,7 +616,7 @@
         </div>`;
     }
 
-    // ── Download single course ────────────────────────────────────────────────
+    // Download single course
     async function downloadCourse(courseId, shortName, btn) {
         btn.disabled   = true;
         btn.innerHTML  = '<span class="spinner-border spinner-border-sm me-1"></span>Downloading...';
@@ -653,7 +647,7 @@
         }
     }
 
-    // ── Download all courses sequentially ────────────────────────────────────
+    // Download all courses sequentially
     async function downloadAll() {
         if (!dashboardData || !dashboardData.courses.length) return;
         showToast('Starting download for all courses...');
@@ -666,13 +660,13 @@
         showToast('All downloads complete!');
     }
 
-    // ── Logout ────────────────────────────────────────────────────────────────
+    // Logout
     async function logout() {
         await fetch('/api/auth/logout', { method: 'POST' });
         window.location.href = '/index.html';
     }
 
-    // ── Helpers ───────────────────────────────────────────────────────────────
+    // Helpers
 
     // Escapes HTML to prevent XSS when injecting user data into innerHTML
     function safe(str) {

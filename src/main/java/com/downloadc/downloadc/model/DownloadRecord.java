@@ -80,4 +80,19 @@ public class DownloadRecord {
     public String getLocalPath() {
         return localPath;
     }
+
+    // Converts file size into readable format
+    public String getFileSizeFormatted() {
+
+        if (fileSizeBytes < 1024)
+            return fileSizeBytes + " B";
+
+        if (fileSizeBytes < 1024 * 1024)
+            return String.format("%.1f KB", fileSizeBytes/ 1024.0);
+
+        if (fileSizeBytes < 1024 * 1024 * 1024)
+            return String.format("%.1f MB", fileSizeBytes /(1024.0 *1024));
+
+        return String.format("%.1f GB", fileSizeBytes / (1024.0* 1024* 1024));
+    }
 }

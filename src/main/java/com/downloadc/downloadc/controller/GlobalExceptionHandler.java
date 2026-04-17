@@ -13,7 +13,7 @@ import java.util.Map;
 public class GlobalExceptionHandler {
 
     // Handles file upload size limit errors
-    // Happens when user uploads abigger file 
+    // Happens when user uploads abigger file
 
     @ExceptionHandler(MaxUploadSizeExceededException.class)
     public ResponseEntity<Map<String, String>> handleMaxUploadSize(MaxUploadSizeExceededException e) {
@@ -32,7 +32,7 @@ public class GlobalExceptionHandler {
         return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
     }
 
-    
+
     //fallback if no other handler matches
     @ExceptionHandler(Exception.class)
     public ResponseEntity<Map<String, String>> handleGeneral(Exception e) {
