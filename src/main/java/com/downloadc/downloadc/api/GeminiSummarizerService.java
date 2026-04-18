@@ -23,7 +23,7 @@ public class GeminiSummarizerService {
 
     // gemini api url
     private static final String GEMINI_URL ="https://generativelanguage.googleapis.com/v1beta/models/" +
-        "gemini-1.5-flash:generateContent?key=";
+        "gemini-2.5-flash:generateContent?key=";
 
     private final HttpClient httpClient;
     private final ObjectMapper objectMapper;
