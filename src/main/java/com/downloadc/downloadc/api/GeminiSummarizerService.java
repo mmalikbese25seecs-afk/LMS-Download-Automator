@@ -13,7 +13,7 @@ import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.time.Duration;
 
-// Service to call gemini api and summarize pdf text
+// Service to call Gemini api and summarize PDF text
 @Service
 
 public class GeminiSummarizerService {
@@ -21,9 +21,9 @@ public class GeminiSummarizerService {
     @Value("${gemini.api.key:}")
     private String apiKey;
 
-    // gemini api url
+    // Gemini API URL
     private static final String GEMINI_URL ="https://generativelanguage.googleapis.com/v1beta/models/" +
-        "gemini-2.5-flash:generateContent?key=";
+        "gemini-2.5-flash-lite:generateContent?key=";
 
     private final HttpClient httpClient;
     private final ObjectMapper objectMapper;
@@ -41,28 +41,28 @@ public class GeminiSummarizerService {
         return apiKey != null && !apiKey.isBlank();
     }
 
-    // Send text to gemini and get summary
+    // Send text to Gemini and get summary
     public String summarize(String extractedText, String fileName) throws Exception {
 
-        // if api key missing
+        // if API key missing
         if (!isConfigured()) {
             throw new Exception(
                 "Gemini API key not configured. Add gemini api key"
             );
         }
 
-        // limit text size so api doesn't break
+        // limit text size so API doesn't break
         String text= extractedText.length() > 12_000? extractedText.substring(0, 12_000) + "\n[shortened]"
                 : extractedText;
 
-        // json body for request
+        // JSON body for request
 
         ObjectNode body = objectMapper.createObjectNode();
         ArrayNode contents = body.putArray("contents");
         ObjectNode content = contents.addObject();
         content.putArray("parts").addObject().put("text", buildPrompt(text, fileName));
 
-        // config settings for gemini
+        // config settings for Gemini
         ObjectNode genCfg = body.putObject("generationConfig");
 
         // low temperature to make summary more factual
@@ -99,7 +99,7 @@ public class GeminiSummarizerService {
         return parseResponse(response.body());
     }
 
-    // Prompt for gemini
+    // Prompt for Gemini
 
     private String buildPrompt(String text, String fileName) {
         return "Summarize the document '" + fileName + "' like this:\n\n" +
@@ -111,12 +111,12 @@ public class GeminiSummarizerService {
                "DOCUMENT:\n" + text;
     }
 
-    // Reads response json and extract text
+    // Reads response JSON and extract text
 
     private String parseResponse(String responseBody) throws Exception {
         JsonNode root = objectMapper.readTree(responseBody);
 
-        // if api gives error
+        // if API gives error
         if (root.has("error"))
             throw new Exception("gemini error: " + root.get("error").get("message").asText());
 
