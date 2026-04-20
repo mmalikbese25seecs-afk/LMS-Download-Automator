@@ -3,701 +3,1005 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>NUST LMS — Dashboard</title>
-
-    <!-- Bootstrap 5.3.8 -->
+    <title>
+        NUST LMS — Dashboard
+    </title>
+    <link href="https://fonts.googleapis.com/css2?family=Crimson+Pro:wght@400;600&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet">
-    <!-- Bootstrap Icons -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
-    <!-- Google Fonts -->
-    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
-
+    <link rel="stylesheet" href="css/style.css">
     <style>
-        :root {
-            --bs-body-bg:        #0b0d15;
-            --bs-body-color:     #dde1f0;
-            --surface:           #10121d;
-            --card-bg:           #161929;
-            --border-color:      #222640;
-            --accent:            #4f8ef7;
-            --accent-glow:       rgba(79,142,247,0.18);
-            --red:               #e74c3c;
-            --orange:            #e67e22;
-            --green:             #2dd4bf;
-            --purple:            #a78bfa;
-            --muted:             #5a6080;
-            --font-main:         'DM Sans', sans-serif;
-            --font-mono:         'JetBrains Mono', monospace;
+        .db-page {
+            max-width: 1100px;
         }
 
-        * { box-sizing: border-box; }
-
-        body {
-            font-family: var(--font-main);
-            background: var(--bs-body-bg);
-            color: var(--bs-body-color);
-            min-height: 100vh;
-        }
-
-        /*  Navbar  */
-        .topnav {
-            background: var(--surface);
-            border-bottom: 1px solid var(--border-color);
-            height: 58px;
-            position: sticky;
-            top: 0;
-            z-index: 1030;
-        }
-
-        .nav-brand {
-            font-size: 1.05rem;
-            font-weight: 800;
-            letter-spacing: 0.3px;
-            color: var(--bs-body-color);
-            text-decoration: none;
-        }
-
-        .nav-brand span { color: var(--accent); }
-
-        .nav-pill {
-            padding: 5px 14px;
-            border-radius: 8px;
-            font-size: 0.84rem;
-            color: var(--muted);
-            text-decoration: none;
-            border: 1px solid transparent;
-            transition: all 0.15s;
-            font-weight: 500;
-        }
-
-        .nav-pill:hover {
-            background: var(--card-bg);
-            color: var(--bs-body-color);
-            border-color: var(--border-color);
-        }
-
-        .nav-pill.active {
-            background: var(--accent);
-            color: #fff;
-            border-color: var(--accent);
-        }
-
-        .user-avatar {
-            width: 32px;
-            height: 32px;
-            border-radius: 50%;
-            background: var(--accent);
-            font-size: 0.82rem;
-            font-weight: 800;
-            color: #fff;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            flex-shrink: 0;
-        }
-
-        .btn-logout {
-            background: transparent;
-            border: 1px solid var(--border-color);
-            color: var(--muted);
-            font-size: 0.8rem;
-            padding: 4px 12px;
-            border-radius: 7px;
-            transition: all 0.15s;
-            font-family: var(--font-main);
-        }
-
-        .btn-logout:hover {
-            border-color: var(--red);
-            color: var(--red);
-            background: rgba(231,76,60,0.07);
-        }
-
-        /* Page */
-        .page-wrap {
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 28px 20px;
-        }
-
-        /* Stat Cards */
-        .stat-card {
-            background: var(--card-bg);
-            border: 1px solid var(--border-color);
-            border-radius: 14px;
-            padding: 20px 22px;
-            transition: transform 0.15s, box-shadow 0.15s;
-        }
-
-        .stat-card:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 8px 24px rgba(0,0,0,0.3);
-        }
-
-        .stat-label {
-            font-size: 0.72rem;
-            font-weight: 600;
-            letter-spacing: 0.8px;
-            text-transform: uppercase;
-            color: var(--muted);
-            margin-bottom: 6px;
-        }
-
-        .stat-value {
-            font-size: 2.2rem;
-            font-weight: 800;
-            line-height: 1;
-            font-family: var(--font-mono);
-        }
-
-        .stat-sub {
-            font-size: 0.76rem;
-            color: var(--muted);
-            margin-top: 5px;
-        }
-
-        .val-blue   { color: var(--accent); }
-        .val-red    { color: var(--red); }
-        .val-green  { color: var(--green); }
-        .val-purple { color: var(--purple); }
-
-        /* Section Cards */
-        .section-card {
-            background: var(--card-bg);
-            border: 1px solid var(--border-color);
-            border-radius: 14px;
-            overflow: hidden;
-        }
-
-        .section-head {
-            padding: 14px 20px;
-            border-bottom: 1px solid var(--border-color);
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-        }
-
-        .section-head h2 {
-            font-size: 0.92rem;
-            font-weight: 700;
-            margin: 0;
-            color: var(--bs-body-color);
-        }
-
-        .head-badge {
-            font-size: 0.72rem;
-            background: var(--surface);
-            border: 1px solid var(--border-color);
-            color: var(--muted);
-            padding: 3px 10px;
-            border-radius: 20px;
-            font-weight: 500;
-        }
-
-        /* Course Rows */
-        .course-row {
-            padding: 13px 20px;
-            border-bottom: 1px solid var(--border-color);
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
+        /* stat cards row at the top */
+        .db-stat-row {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
             gap: 12px;
-            transition: background 0.12s;
+            margin-bottom: 24px;
         }
 
-        .course-row:last-child { border-bottom: none; }
-
-        .course-row:hover { background: rgba(79,142,247,0.04); }
-
-        .course-name {
-            font-size: 0.88rem;
-            font-weight: 600;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            color: var(--bs-body-color);
-        }
-
-        .course-code {
-            font-size: 0.73rem;
-            color: var(--muted);
-            margin-top: 2px;
-            font-family: var(--font-mono);
-        }
-
-        .btn-dl {
-            background: var(--accent);
-            color: #fff;
-            border: none;
-            padding: 5px 14px;
-            border-radius: 7px;
-            font-size: 0.78rem;
-            font-weight: 600;
-            cursor: pointer;
-            white-space: nowrap;
-            transition: all 0.15s;
-            font-family: var(--font-main);
-            flex-shrink: 0;
-        }
-
-        .btn-dl:hover:not(:disabled)  { background: #3a7be0; }
-        .btn-dl:disabled {
-            background: var(--border-color);
-            color: var(--muted);
-            cursor: not-allowed;
-        }
-        .btn-dl.done { background: var(--green); color: #0b0d15; }
-
-        /* Deadline Items */
-        .deadline-item {
-            padding: 12px 18px;
-            border-bottom: 1px solid var(--border-color);
-            display: flex;
-            gap: 11px;
-            align-items: flex-start;
-            transition: background 0.12s;
-        }
-
-        .deadline-item:last-child { border-bottom: none; }
-        .deadline-item:hover { background: rgba(255,255,255,0.02); }
-
-        .dl-dot {
-            width: 9px;
-            height: 9px;
-            border-radius: 50%;
-            margin-top: 5px;
-            flex-shrink: 0;
-        }
-
-        .dl-title {
-            font-size: 0.85rem;
-            font-weight: 600;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            color: var(--bs-body-color);
-        }
-
-        .dl-course {
-            font-size: 0.73rem;
-            color: var(--muted);
-            margin-top: 2px;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-        }
-
-        .dl-when {
-            font-size: 0.72rem;
-            font-weight: 700;
-            white-space: nowrap;
-            flex-shrink: 0;
-            padding: 3px 9px;
+        .db-stat {
             border-radius: 12px;
-            color: #fff;
-            font-family: var(--font-mono);
+            padding: 16px 18px;
+            border: 1px solid;
+            transition: transform 0.15s;
         }
 
-        /* Quick Actions */
-        .action-btn {
-            display: inline-flex;
+        .db-stat:hover {
+            transform: translateY(-2px);
+        }
+
+        [data-bs-theme="dark"]  .db-stat {
+            background: #141414; border-color: rgba(255,255,255,0.07);
+        }
+        [data-bs-theme="light"] .db-stat {
+            background: #fff;    border-color: #e5e7eb;
+        }
+
+        .db-stat-value {
+            font-size: 1.9rem;
+            font-weight: 700;
+            line-height: 1;
+            margin-bottom: 4px;
+        }
+
+        .db-stat-label {
+            font-size: 0.72rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        [data-bs-theme="dark"]  .db-stat-label {
+            color: #555;
+        }
+        [data-bs-theme="light"] .db-stat-label {
+            color: #9ca3af;
+        }
+
+        /* quick action buttons */
+        .db-actions {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-bottom: 24px;
+        }
+
+        .db-action {
+            display: flex;
             align-items: center;
             gap: 7px;
             padding: 9px 16px;
             border-radius: 9px;
-            border: 1px solid var(--border-color);
-            background: var(--card-bg);
-            color: var(--bs-body-color);
-            text-decoration: none;
-            font-size: 0.84rem;
-            font-weight: 500;
+            border: 1px solid;
+            font-family: 'DM Sans', sans-serif;
+            font-size: 0.85rem;
             cursor: pointer;
+            text-decoration: none;
             transition: all 0.15s;
-            font-family: var(--font-main);
         }
 
-        .action-btn:hover {
-            border-color: var(--accent);
-            color: var(--accent);
-            background: var(--accent-glow);
+        [data-bs-theme="dark"] .db-action {
+            background: #141414;
+            border-color: rgba(255,255,255,0.08);
+            color: #ccc;
         }
 
-        /* Urgent Banner */
-        .urgent-banner {
-            background: rgba(231,76,60,0.08);
-            border: 1px solid rgba(231,76,60,0.28);
-            border-radius: 10px;
-            padding: 12px 18px;
-            color: #f87171;
-            font-size: 0.86rem;
+        [data-bs-theme="light"] .db-action {
+            background: #fff;
+            border-color: #e5e7eb;
+            color: #374151;
+        }
+
+        .db-action:hover {
+            border-color: #1a4b8c; color: #1a4b8c;
+        }
+
+        /* main layout: left content + right sidebar */
+        .db-grid {
+            display: grid;
+            grid-template-columns: 1fr 300px;
+            gap: 16px;
+            align-items: start;
+        }
+
+        /* stack on mobile */
+        @media (max-width: 860px) {
+            .db-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .db-left {
+            display: flex; flex-direction: column; gap: 16px;
+        }
+
+        .db-card {
+            border-radius: 12px;
+            border: 1px solid;
+            overflow: hidden;
+        }
+
+        [data-bs-theme="dark"]  .db-card {
+            background: #141414; border-color: rgba(255,255,255,0.07);
+        }
+        [data-bs-theme="light"] .db-card {
+            background: #fff;    border-color: #e5e7eb;
+        }
+
+        .db-card-head {
+            padding: 13px 18px;
+            border-bottom: 1px solid;
             display: flex;
             align-items: center;
+            justify-content: space-between;
+        }
+
+        [data-bs-theme="dark"]  .db-card-head {
+            border-color: rgba(255,255,255,0.06);
+        }
+        [data-bs-theme="light"] .db-card-head {
+            border-color: #f3f4f6;
+        }
+
+        .db-card-head h2 {
+            font-size: 0.9rem; font-weight: 600; margin: 0;
+        }
+
+        [data-bs-theme="dark"]  .db-card-head h2 {
+            color: #e0e0e0;
+        }
+        [data-bs-theme="light"] .db-card-head h2 {
+            color: #111;
+        }
+
+        .db-badge {
+            font-size: 0.72rem; padding: 2px 9px; border-radius: 10px;
+        }
+
+        [data-bs-theme="dark"]  .db-badge {
+            background: rgba(255,255,255,0.05); color: #555;
+        }
+        [data-bs-theme="light"] .db-badge {
+            background: #f3f4f6; color: #9ca3af;
+        }
+
+        /* each course in the list */
+        .db-course-row {
+            padding: 12px 18px;
+            border-bottom: 1px solid;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            transition: background 0.1s;
+        }
+
+        [data-bs-theme="dark"]  .db-course-row {
+            border-color: rgba(255,255,255,0.04);
+        }
+        [data-bs-theme="light"] .db-course-row {
+            border-color: #f9fafb;
+        }
+
+        .db-course-row:last-child {
+            border-bottom: none;
+        }
+
+        [data-bs-theme="dark"]  .db-course-row:hover {
+            background: rgba(26,75,140,0.06);
+        }
+        [data-bs-theme="light"] .db-course-row:hover {
+            background: #f9fafb;
+        }
+
+        .db-course-info {
+            flex: 1; min-width: 0;
+        }
+
+        .db-course-name {
+            font-size: 0.875rem;
+            font-weight: 500;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        [data-bs-theme="dark"]  .db-course-name {
+            color: #e0e0e0;
+        }
+        [data-bs-theme="light"] .db-course-name {
+            color: #111;
+        }
+
+        .db-course-code {
+            font-size: 0.75rem; margin-top: 2px;
+        }
+
+        [data-bs-theme="dark"]  .db-course-code {
+            color: #555;
+        }
+        [data-bs-theme="light"] .db-course-code {
+            color: #9ca3af;
+        }
+
+        .db-dl-btn {
+            padding: 5px 13px;
+            border-radius: 7px;
+            border: none;
+            background: #1a4b8c;
+            color: #fff;
+            font-family: 'DM Sans', sans-serif;
+            font-size: 0.78rem;
+            cursor: pointer;
+            white-space: nowrap;
+            transition: all 0.15s;
+            flex-shrink: 0;
+        }
+
+        .db-dl-btn:hover:not(:disabled) {
+            background: #163d75;
+        }
+
+        .db-dl-btn:disabled {
+            background: transparent;
+            border: 1px solid rgba(255,255,255,0.1);
+            color: #555;
+            cursor: not-allowed;
+        }
+
+        .db-dl-btn.done {
+            background: #065f46; color: #6ee7b7;
+        }
+
+        /* deadline sidebar items */
+        .db-deadline {
+            padding: 11px 16px;
+            border-bottom: 1px solid;
+            display: flex;
+            align-items: flex-start;
             gap: 10px;
         }
 
-        /* Spinner / Center */
-        .center-screen {
+        [data-bs-theme="dark"]  .db-deadline {
+            border-color: rgba(255,255,255,0.04);
+        }
+        [data-bs-theme="light"] .db-deadline {
+            border-color: #f9fafb;
+        }
+
+        .db-deadline:last-child {
+            border-bottom: none;
+        }
+
+        .db-dl-dot {
+            width: 8px; height: 8px; border-radius: 50%; margin-top: 6px; flex-shrink: 0;
+        }
+
+        .db-dl-info {
+            flex: 1; min-width: 0;
+        }
+
+        .db-dl-title {
+            font-size: 0.84rem;
+            font-weight: 500;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        [data-bs-theme="dark"]  .db-dl-title {
+            color: #e0e0e0;
+        }
+        [data-bs-theme="light"] .db-dl-title {
+            color: #111;
+        }
+
+        .db-dl-course {
+            font-size: 0.74rem;
+            margin-top: 1px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        [data-bs-theme="dark"]  .db-dl-course {
+            color: #555;
+        }
+        [data-bs-theme="light"] .db-dl-course {
+            color: #9ca3af;
+        }
+
+        /* colored "Today / Tomorrow / Xd" badge */
+        .db-dl-when {
+            font-size: 0.72rem;
+            font-weight: 600;
+            padding: 2px 8px;
+            border-radius: 8px;
+            color: #fff;
+            white-space: nowrap;
+            flex-shrink: 0;
+        }
+
+        /* announcement list items */
+        .db-ann {
+            padding: 12px 16px;
+            border-bottom: 1px solid;
+            display: flex;
+            gap: 10px;
+            transition: background 0.1s;
+            cursor: default;
+        }
+
+        [data-bs-theme="dark"]  .db-ann {
+            border-color: rgba(255,255,255,0.04);
+        }
+        [data-bs-theme="light"] .db-ann {
+            border-color: #f9fafb;
+        }
+
+        .db-ann:last-child {
+            border-bottom: none;
+        }
+
+        [data-bs-theme="dark"]  .db-ann:hover {
+            background: rgba(255,255,255,0.02);
+        }
+        [data-bs-theme="light"] .db-ann:hover { background: #f9fafb; }
+
+        .db-ann-icon {
+            font-size: 1.2rem; flex-shrink: 0; margin-top: 1px;
+        }
+
+        .db-ann-info {
+            flex: 1; min-width: 0;
+        }
+
+        .db-ann-subject {
+            font-size: 0.84rem;
+            font-weight: 500;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        [data-bs-theme="dark"]  .db-ann-subject {
+            color: #e0e0e0;
+        }
+        [data-bs-theme="light"] .db-ann-subject {
+            color: #111;
+        }
+
+        .db-ann-meta {
+            font-size: 0.74rem; margin-top: 2px; display: flex; gap: 8px;
+        }
+
+        [data-bs-theme="dark"]  .db-ann-meta {
+            color: #555;
+        }
+        [data-bs-theme="light"] .db-ann-meta {
+            color: #9ca3af;
+        }
+
+        /* red banner when deadlines are close */
+        .db-urgent {
+            border-radius: 10px;
+            padding: 11px 16px;
+            margin-bottom: 18px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 0.875rem;
+            background: rgba(231,76,60,0.08);
+            border: 1px solid rgba(231,76,60,0.25);
+            color: #f87171;
+        }
+
+        .db-empty {
+            padding: 28px 16px; text-align: center; font-size: 0.84rem;
+        }
+
+        [data-bs-theme="dark"]  .db-empty {
+            color: #555;
+        }
+        [data-bs-theme="light"] .db-empty {
+            color: #9ca3af;
+        }
+
+        /* fullscreen spinner while fetching data */
+        .db-loading {
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
             min-height: 60vh;
-            gap: 14px;
-            color: var(--muted);
+            gap: 12px;
         }
 
-        .spinner-ring {
-            width: 36px;
-            height: 36px;
-            border: 3px solid var(--border-color);
-            border-top-color: var(--accent);
+        .db-spinner {
+            width: 34px; height: 34px;
+            border: 3px solid rgba(255,255,255,0.07);
+            border-top-color: #1a4b8c;
             border-radius: 50%;
-            animation: spin 0.7s linear infinite;
+            animation: dbSpin 0.7s linear infinite;
         }
 
-        @keyframes spin { to { transform: rotate(360deg); } }
-
-        .empty-msg {
-            padding: 26px 20px;
-            text-align: center;
-            color: var(--muted);
-            font-size: 0.84rem;
+        [data-bs-theme="light"] .db-spinner {
+            border-color: rgba(0,0,0,0.08); border-top-color: #1a4b8c;
         }
 
-        /* Toast */
-        .toast-custom {
+        @keyframes dbSpin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        /* bottom-right toast notification */
+        .db-toast {
             position: fixed;
-            bottom: 24px;
-            right: 24px;
-            background: var(--card-bg);
-            border: 1px solid var(--border-color);
+            bottom: 20px; right: 20px;
             border-radius: 10px;
-            padding: 13px 18px;
-            font-size: 0.85rem;
-            color: var(--bs-body-color);
-            max-width: 300px;
+            padding: 12px 16px;
+            font-size: 0.84rem;
+            max-width: 280px;
             z-index: 9999;
             opacity: 0;
-            transform: translateY(10px);
-            transition: all 0.25s;
+            transform: translateY(8px);
+            transition: all 0.22s;
             pointer-events: none;
-            font-family: var(--font-main);
         }
 
-        .toast-custom.show {
-            opacity: 1;
-            transform: translateY(0);
+        [data-bs-theme="dark"]  .db-toast {
+            background: #1e1e1e; border: 1px solid rgba(255,255,255,0.1); color: #e0e0e0;
+        }
+        [data-bs-theme="light"] .db-toast {
+            background: #fff; border: 1px solid #e5e7eb; color: #111; box-shadow: 0 4px 20px rgba(0,0,0,0.1);
         }
 
-        /* Responsive */
-        @media (max-width: 768px) {
-            .topnav .nav-links { display: none; }
-            .page-wrap { padding: 18px 14px; }
+        .db-toast.show {
+            opacity: 1; transform: translateY(0);
         }
     </style>
 </head>
-<body>
+<body class="cal-body">
 
-<!-- Navbar -->
-<nav class="topnav d-flex align-items-center px-4 gap-3">
-
-    <a class="nav-brand me-3" href="/dashboard.html">NUST <span>LMS</span></a>
-
-    <div class="nav-links">
-        <a href="/dashboard.html"  class="nav-link active">🏠 Dashboard</a>
-        <a href="/calendar.html"   class="nav-link">📅 Calendar</a>
-        <a href="/files.html"      class="nav-link">📂 Files</a>
-        <a href="/summarizer.html" class="nav-link">🤖 Summarizer</a>
+<header
+        class="cal-navbar">
+    <div
+            class="d-flex align-items-center gap-3">
+        <img src="https://lms.nust.edu.pk/portal/pluginfile.php/1/theme_moove/logo/1771565541/LMS%20Logo%20Final%20Shade.png"
+             alt="NUST LMS" style="height:36px;width:auto;object-fit:contain;flex-shrink:0;">
+        <div>
+            <div
+                    class="cal-navbar-title">NUST-LMS
+            </div>
+            <div
+                    class="cal-navbar-sub" id="navSub">Dashboard
+            </div>
+        </div>
     </div>
 
-    <div class="d-flex align-items-center gap-2 ms-auto">
-        <div class="user-avatar" id="avatarLetter">?</div>
-        <span class="d-none d-sm-inline" style="font-size:0.83rem;color:var(--muted)"
-              id="navUserName">Loading...</span>
-        <button class="btn-logout" onclick="logout()">Logout</button>
+    <!-- nav links, hidden on mobile -->
+    <div
+            class="d-none d-md-flex align-items-center gap-1">
+        <a
+                href="/dashboard.html"  class="cal-btn-logout btn btn-sm active"
+           style="color:#fff;background:#1a4b8c;border-color:#1a4b8c">🏠 Dashboard
+        </a>
+        <a
+                href="/calendar.html"   class="cal-btn-logout btn btn-sm">📅 Calendar
+        </a>
+        <a
+                href="/files.html"      class="cal-btn-logout btn btn-sm">📂 Files
+        </a>
+        <a
+                href="/summarizer.html" class="cal-btn-logout btn btn-sm">🤖 Summarizer
+        </a>
     </div>
 
-</nav>
+    <div
+            class="d-flex align-items-center gap-2">
+        <div
+                class="form-check form-switch mb-0 d-flex align-items-center gap-2">
+            <input
+                    class="form-check-input cal-theme-switch" type="checkbox" role="switch" id="darkToggle">
+            <label
+                    class="form-check-label cal-switch-label" for="darkToggle">
+                <i
+                        class="fa fa-sun" id="themeIcon">
 
-<!-- Page Content -->
-<div class="page-wrap" id="pageContent">
-    <div class="center-screen">
-        <div class="spinner-ring"></div>
-        <p style="font-size:0.88rem">Loading your dashboard...</p>
+                </i>
+            </label>
+        </div>
+        <span
+                class="cal-switch-label d-none d-sm-inline"
+              id="navUserName" style="font-size:0.8rem;color:#aaa">
+
+        </span>
+        <button
+                class="btn btn-sm cal-btn-logout" id="logoutBtn">
+            <i
+                    class="fa fa-right-from-bracket me-1">
+
+            </i>Logout
+        </button>
+    </div>
+</header>
+
+<div
+        class="container db-page py-4" id="pageContent">
+    <div
+            class="db-loading">
+        <div
+                class="db-spinner">
+        </div>
+        <span
+                style="font-size:0.85rem;color:#666">Loading your Dashboard...
+        </span>
     </div>
 </div>
 
-<!-- Toast -->
-<div class="toast-custom" id="toast"></div>
+<div
+        class="db-toast" id="toast">
+</div>
 
-<!-- Bootstrap 5.3.8 JS -->
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"></script>
-
+<script
+        src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js">
+</script>
 <script>
-    // State
-    let dashboardData = null;
+    // theme toggle, saves to localStorage so it persists
+    const darkToggle = document.getElementById('darkToggle');
+    const themeIcon  = document.getElementById('themeIcon');
 
-    // Startup
+    function applyTheme(t) {
+        document.documentElement.setAttribute('data-bs-theme', t);
+        localStorage.setItem('theme', t);
+        darkToggle.checked  = t === 'light';
+        themeIcon.className = t === 'light' ? 'fa fa-moon' : 'fa fa-sun';
+    }
+
+    applyTheme(localStorage.getItem('theme') === 'light' ? 'light' : 'dark');
+    darkToggle.addEventListener('change', () => applyTheme(darkToggle.checked ? 'light' : 'dark'));
+
+    let dashData = null;
+
+    // on page load, check auth then fetch dashboard
     document.addEventListener('DOMContentLoaded', async () => {
-
-        // Redirect to login if not authenticated
         try {
-            const res  = await fetch('/api/auth/status');
-            const data = await res.json();
-            if (!data.loggedIn) { window.location.href = '/index.html'; return; }
+            const r = await fetch('/api/auth/status');
+            const d = await r.json();
+            if (!d.loggedIn) {
+                window.location.href = '/index.html'; return;
+            }
         } catch {
-            window.location.href = '/index.html';
-            return;
+            window.location.href = '/index.html'; return;
         }
 
         await loadDashboard();
     });
 
-    // Load
+    // fetch summary from backend and render
     async function loadDashboard() {
         try {
             const res = await fetch('/api/dashboard/summary');
-
-            if (res.status === 401) { window.location.href = '/index.html'; return; }
-
+            if (res.status === 401) {
+                window.location.href = '/index.html'; return;
+            }
             if (!res.ok) {
-                const err = await res.json();
-                showError(err.error || 'Failed to load dashboard.');
+                const e = await res.json();
+                showFatalError(e.error || 'Failed to load.');
                 return;
             }
-
-            dashboardData = await res.json();
-            render(dashboardData);
-
+            dashData = await res.json();
+            render(dashData);
         } catch (e) {
-            showError('Connection error: ' + e.message);
+            showFatalError('Connection error: ' + e.message);
         }
     }
 
-    // Render
-    function render(data) {
+    function render(d) {
+        const firstName = (d.fullName || 'Student').split(' ')[0];
+        document.getElementById('navUserName').textContent = d.fullName || '';
 
-        const firstName   = data.fullName.split(' ')[0];
-        const courseCount = data.courses.length;
-        const urgentCount = data.urgentCount;
-        const eventCount  = data.upcomingEvents.length;
-        const quizCount   = data.upcomingEvents.filter(e => e.eventType === 'quiz').length;
+        const courses   = d.courses        || [];
+        const events    = d.upcomingEvents  || [];
+        const anns      = d.announcements   || [];
+        const urgent    = d.urgentCount     || 0;
+        const quizCount = events.filter(e => e.eventType === 'quiz').length;
 
-        // Update navbar
-        document.getElementById('navUserName').textContent  = data.fullName;
-        document.getElementById('avatarLetter').textContent = data.fullName.charAt(0).toUpperCase();
-
-        // Urgent banner, only shown when deadlines exist within 3 days
-        const urgentBanner = urgentCount > 0 ? `
-        <div class="urgent-banner mb-4">
-            <i class="bi bi-exclamation-triangle-fill fs-5"></i>
-            <span>You have <strong>${urgentCount}</strong>
-            deadline${urgentCount > 1 ? 's' : ''} due within the next 3 days.</span>
-            <a href="/calendar.html"
-               class="ms-auto text-decoration-underline"
-               style="color:inherit;white-space:nowrap">View Calendar →</a>
+        // show red banner if something's due within 3 days
+        const urgentBanner = urgent > 0 ? `
+        <div
+         class="db-urgent">
+            ⚠️ <strong>
+${
+            urgent
+        }
+</strong> deadline
+${
+            urgent > 1 ? 's' : ''
+        } due within 3 days.
+            <a
+             href="/calendar.html" style="margin-left:auto;color:inherit;text-decoration:underline">View Calendar →
+             </a>
         </div>` : '';
 
-        // Stat tiles row
         const stats = `
-        <div class="row g-3 mb-4">
-            <div class="col-6 col-md-3">
-                <div class="stat-card">
-                    <div class="stat-label">Enrolled Courses</div>
-                    <div class="stat-value val-blue">${courseCount}</div>
-                    <div class="stat-sub">${safe(data.siteName)}</div>
-                </div>
+        <div
+         class="db-stat-row">
+            <div
+             class="db-stat">
+                <div
+                 class="db-stat-value" style="color:#3b82f6">
+${
+            courses.length
+        }
+</div>
+                <div
+                 class="db-stat-label">Courses
+                 </div>
             </div>
-            <div class="col-6 col-md-3">
-                <div class="stat-card">
-                    <div class="stat-label">Urgent Deadlines</div>
-                    <div class="stat-value val-red">${urgentCount}</div>
-                    <div class="stat-sub">Due within 3 days</div>
-                </div>
+            <div
+             class="db-stat">
+                <div
+                 class="db-stat-value" style="color:#e74c3c">
+${
+            urgent
+        }
+                 </div>
+                <div
+                 class="db-stat-label">Urgent
+                 </div>
             </div>
-            <div class="col-6 col-md-3">
-                <div class="stat-card">
-                    <div class="stat-label">Upcoming Events</div>
-                    <div class="stat-value val-green">${eventCount}</div>
-                    <div class="stat-sub">Next 14 days</div>
-                </div>
+            <div
+             class="db-stat">
+                <div
+                 class="db-stat-value" style="color:#2dd4bf">
+${
+            events.length
+        }
+</div>
+                <div
+                 class="db-stat-label">Upcoming
+                 </div>
             </div>
-            <div class="col-6 col-md-3">
-                <div class="stat-card">
-                    <div class="stat-label">Quizzes Ahead</div>
-                    <div class="stat-value val-purple">${quizCount}</div>
-                    <div class="stat-sub">Next 14 days</div>
-                </div>
+            <div
+             class="db-stat">
+                <div
+                 class="db-stat-value" style="color:#a78bfa">
+${
+            quizCount
+        }
+</div>
+                <div
+                 class="db-stat-label">Quizzes
+                 </div>
             </div>
         </div>`;
 
-        // Quick action buttons
         const actions = `
-    <div class="quick-actions">
-        <a href="/calendar.html"   class="action-btn"><span class="icon">📅</span> Calendar</a>
-        <a href="/files.html"      class="action-btn"><span class="icon">📂</span> File Manager</a>
-        <a href="/summarizer.html" class="action-btn"><span class="icon">🤖</span> Summarizer</a>
-        <button class="action-btn" onclick="downloadAll()"><span class="icon">⬇️</span> Download All</button>
-        <button class="action-btn" onclick="loadDashboard()"><span class="icon">🔄</span> Refresh</button>
-    </div>`;
+        <div class="db-actions">
+            <a href="/calendar.html"   class="db-action">📅 Calendar</a>
+            <a href="/files.html"      class="db-action">📂 File Manager</a>
+            <a href="/summarizer.html" class="db-action">🤖 Summarizer</a>
+            <button class="db-action" onclick="downloadAll()">⬇️ Download All</button>
+            <button class="db-action" onclick="loadDashboard()">🔄 Refresh</button>
+        </div>`;
 
-        // Course rows
-        const courseRows = data.courses.length === 0
-            ? '<div class="empty-msg">No enrolled courses found.</div>'
-            : data.courses.map(c => `
-            <div class="course-row" id="course-row-${c.id}">
-                <div style="flex:1;min-width:0">
-                    <div class="course-name">${safe(c.fullName)}</div>
-                    <div class="course-code">${safe(c.shortName)}</div>
+        const courseRows = courses.length === 0
+            ? '<div' +
+            ' class="db-empty">No enrolled courses found.' +
+            '</div>'
+            : courses.map(c => `
+            <div
+             class="db-course-row">
+                <div
+                 class="db-course-info">
+                    <div
+                     class="db-course-name" title="
+${
+                safe(c.fullName)
+            }">
+${
+                safe(c.fullName)
+            }
+                     </div>
+                    <div
+                     class="db-course-code">
+${
+                safe(c.shortName)
+            }
+</div>
                 </div>
-                <button class="btn-dl"
-                        id="btn-${c.id}"
-                        onclick="downloadCourse(${c.id}, '${safe(c.shortName)}', this)">
-                    <i class="bi bi-download me-1"></i>Download
+                <button
+                 class="db-dl-btn" id="btn-
+${
+                c.id
+            }"
+                        data-id="
+${
+                c.id
+            }" data-short="
+${
+                safe(c.shortName)
+            }">
+                    ⬇ Download
                 </button>
             </div>`).join('');
 
-        // Deadline items
-        const deadlineItems = data.upcomingEvents.length === 0
-            ? '<div class="empty-msg">No upcoming deadlines in the next 14 days 🎉</div>'
-            : data.upcomingEvents.map(e => {
-                const daysLeft = Math.ceil(e.timeUntilDue / 86400);
-                const label    = daysLeft === 0 ? 'Today'
-                    : daysLeft === 1 ? 'Tomorrow'
-                        : `${daysLeft}d`;
+        // calculate days left and pick a label
+        const deadlines = events.length === 0
+            ? '<div' +
+            ' class="db-empty">No upcoming deadlines 🎉' +
+            '</div>'
+            : events.map(e => {
+                const d = Math.ceil(e.timeUntilDue / 86400);
+                const label = d === 0 ? 'Today' : d === 1 ? 'Tomorrow' : `
+                ${
+                    d
+                }d`;
                 return `
-            <div class="deadline-item">
-                <div class="dl-dot" style="background:${e.color}"></div>
-                <div style="flex:1;min-width:0">
-                    <div class="dl-title">${safe(e.title)}</div>
-                    <div class="dl-course">${safe(e.courseName)}</div>
+            <div
+             class="db-deadline">
+                <div
+                 class="db-dl-dot" style="background:
+${
+                    e.color
+                }">
+</div>
+                <div
+                 class="db-dl-info">
+                    <div
+                     class="db-dl-title">
+${
+                    safe(e.title)
+                }
+</div>
+                    <div
+                     class="db-dl-course">
+${
+                    safe(e.courseName)
+                }
+</div>
                 </div>
-                <span class="dl-when" style="background:${e.color}">${label}</span>
+                <span
+                 class="db-dl-when" style="background:
+${
+                    e.color
+                }">
+${
+                    label
+                }
+</span>
             </div>`;
             }).join('');
 
-        // Assemble full page
-        document.getElementById('pageContent').innerHTML = `
-        <div class="mb-4">
-            <h1 style="font-size:1.45rem;font-weight:800">
-                Good day, ${safe(firstName)} 👋
-            </h1>
-            <p style="font-size:0.88rem;color:var(--muted);margin-top:4px">
-                Here's your academic overview for today.
-            </p>
-        </div>
-
-        ${urgentBanner}
-        ${stats}
-        ${actions}
-
-        <div class="row g-4">
-            <div class="col-12 col-lg-7">
-                <div class="section-card">
-                    <div class="section-head">
-                        <h2><i class="bi bi-journals me-2"></i>Enrolled Courses</h2>
-                        <span class="head-badge">${courseCount} courses</span>
+        const annItems = anns.length === 0
+            ? '<div' +
+            ' class="db-empty">No new notifications.' +
+            '</div>'
+            : anns.map(a => `
+            <div
+             class="db-ann">
+                <span
+                 class="db-ann-icon">
+${
+                safe(a.icon)
+            }
+                </span>
+                <div
+                 class="db-ann-info">
+                    <div
+                     class="db-ann-subject">
+${
+                safe(a.subject)
+            }
                     </div>
-                    ${courseRows}
+                    <div class="db-ann-meta">
+                        <span>
+${
+                safe(a.senderName)
+            }
+</span>
+                        <span>·</span>
+                        <span>
+${
+                safe(a.formattedTime)
+            }
+</span>
+                    </div>
+                </div>
+            </div>`).join('');
+
+        document.getElementById('pageContent').innerHTML = `
+        <div
+         class="mb-4">
+            <h1
+             class="cal-heading mb-1">
+                Good day,
+                 <span
+                 style="color:#1a4b8c">
+${
+            safe(firstName)
+        }
+</span> 👋
+            </h1>
+            <p
+             class="cal-desc">Here's your academic overview.
+             </p>
+        </div>
+        ${
+            urgentBanner
+        }
+        ${
+            stats
+        }
+        ${
+            actions
+        }
+        <div
+         class="db-grid">
+            <div
+             class="db-left">
+                <div
+                 class="db-card">
+                    <div
+                     class="db-card-head">
+                        <h2>
+                        📚 Enrolled Courses
+                        </h2>
+                        <span
+                         class="db-badge">
+${
+            courses.length
+        }
+</span>
+                    </div>
+                    ${
+            courseRows
+        }
+                </div>
+
+                <div
+                 class="db-card">
+                    <div
+                     class="db-card-head">
+                        <h2>
+                        📢 Announcements
+                        </h2>
+                        <a href="/calendar.html" style="font-size:0.75rem;color:#1a4b8c;text-decoration:none">View all →</a>
+                    </div>
+${
+            annItems
+        }
                 </div>
             </div>
-            <div class="col-12 col-lg-5">
-                <div class="section-card">
-                    <div class="section-head">
-                        <h2><i class="bi bi-alarm me-2"></i>Upcoming Deadlines</h2>
-                        <a href="/calendar.html"
-                           style="font-size:0.78rem;color:var(--accent);text-decoration:none">
-                            View all →
-                        </a>
-                    </div>
-                    ${deadlineItems}
+
+            <div
+             class="db-card">
+                <div
+                 class="db-card-head">
+                    <h2>
+                    ⏰ Upcoming Deadlines
+                    </h2>
+                    <a href="/calendar.html" style="font-size:0.75rem;color:#1a4b8c;text-decoration:none">View all →</a>
                 </div>
+${
+            deadlines
+        }
             </div>
         </div>`;
+
+        // wire download buttons after html is injected
+        document.querySelectorAll('.db-dl-btn').forEach(btn => {
+            btn.addEventListener('click', () =>
+                downloadCourse(parseInt(btn.dataset.id), btn.dataset.short, btn));
+        });
     }
 
-    // Download single course
+    // download files for a single course
     async function downloadCourse(courseId, shortName, btn) {
-        btn.disabled   = true;
-        btn.innerHTML  = '<span class="spinner-border spinner-border-sm me-1"></span>Downloading...';
+        btn.disabled    = true;
+        btn.textContent = '⏳...';
 
         try {
-            const res  = await fetch(`/api/download/${courseId}`, {
+            const res = await fetch(`/api/download/
+            ${
+                courseId
+            }`, {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ shortName })
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    shortName
+                })
             });
             const data = await res.json();
 
             if (res.ok) {
-                btn.innerHTML = `<i class="bi bi-check-lg me-1"></i>Done (${data.downloaded})`;
+                btn.textContent = `✓
+                ${
+                    data.downloaded
+                }`;
                 btn.classList.add('done');
-                showToast(`Downloaded ${data.downloaded} file(s) from ${shortName}.`
-                    + (data.skipped > 0 ? ` ${data.skipped} already existed.` : ''));
+                showToast(`
+                ${
+                    shortName
+                }:
+                ${
+                    data.downloaded
+                } downloaded,
+                ${
+                    data.skipped
+                } skipped.`);
             } else {
-                btn.innerHTML = '<i class="bi bi-x-lg me-1"></i>Failed';
-                btn.disabled  = false;
-                showToast('Download failed: ' + (data.error || 'unknown error'), true);
+                btn.textContent = '✗';
+                btn.disabled = false;
+                showToast('Failed: ' + (data.error || 'unknown'), true);
             }
-
         } catch (e) {
-            btn.innerHTML = '<i class="bi bi-x-lg me-1"></i>Error';
-            btn.disabled  = false;
-            showToast('Connection error: ' + e.message, true);
+            btn.textContent = '✗';
+            btn.disabled = false;
+            showToast('Error: ' + e.message, true);
         }
     }
 
-    // Download all courses sequentially
+    // loops through all courses and downloads one by one
     async function downloadAll() {
-        if (!dashboardData || !dashboardData.courses.length) return;
-        showToast('Starting download for all courses...');
-        for (const course of dashboardData.courses) {
-            const btn = document.getElementById(`btn-${course.id}`);
+        if (!dashData || !dashData.courses.length) return;
+        showToast('Starting all downloads...');
+        for (const c of dashData.courses) {
+            const btn = document.getElementById('btn-' + c.id);
             if (btn && !btn.classList.contains('done')) {
-                await downloadCourse(course.id, course.shortName, btn);
+                await downloadCourse(c.id, c.shortName, btn);
             }
         }
         showToast('All downloads complete!');
     }
 
-    // Logout
-    async function logout() {
-        await fetch('/api/auth/logout', { method: 'POST' });
+    document.getElementById('logoutBtn').addEventListener('click', async () => {
+        await fetch('/api/auth/logout', {
+            method: 'POST'
+        });
         window.location.href = '/index.html';
-    }
+    });
 
-    // Helpers
-
-    // Escapes HTML to prevent XSS when injecting user data into innerHTML
-    function safe(str) {
-        if (!str) return '';
-        return str
-            .replace(/&/g, '&amp;')
-            .replace(/</g, '&lt;')
-            .replace(/>/g, '&gt;')
-            .replace(/"/g, '&quot;');
-    }
-
-    function showError(msg) {
+    // show full page error with a retry button
+    function showFatalError(msg) {
         document.getElementById('pageContent').innerHTML = `
-        <div class="center-screen">
-            <i class="bi bi-exclamation-circle" style="font-size:2rem;color:var(--red)"></i>
-            <p style="color:var(--red)">${safe(msg)}</p>
-            <button class="btn-dl" onclick="loadDashboard()">
-                <i class="bi bi-arrow-clockwise me-1"></i>Retry
+        <div
+         class="db-loading">
+            <p
+             style="color:#e74c3c">
+${
+            safe(msg)
+        }
+</p>
+            <button
+             class="db-dl-btn" onclick="loadDashboard()">Retry
             </button>
         </div>`;
     }
 
+    // bottom-right toast, auto-hides after 3.2s
     let toastTimer = null;
-
-    function showToast(message, isError = false) {
+    function showToast(msg, isErr = false) {
         const el = document.getElementById('toast');
-        el.textContent = message;
-        el.style.borderColor = isError ? 'var(--red)' : 'var(--border-color)';
+        el.textContent = msg;
+        el.style.borderColor = isErr ? 'rgba(231,76,60,0.4)' : '';
         el.classList.add('show');
         if (toastTimer) clearTimeout(toastTimer);
-        toastTimer = setTimeout(() => el.classList.remove('show'), 3500);
+        toastTimer = setTimeout(() => el.classList.remove('show'), 3200);
+    }
+
+    // escape html to avoid xss, always use this for user data
+    function safe(s) {
+        if (!s) return '';
+        return String(s)
+            .replace(/&/g,'&amp;').replace(/</g,'&lt;')
+            .replace(/>/g,'&gt;').replace(/"/g,'&quot;');
     }
 </script>
 </body>
