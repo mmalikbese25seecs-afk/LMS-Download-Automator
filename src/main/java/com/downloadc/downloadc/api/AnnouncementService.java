@@ -27,7 +27,7 @@ public class AnnouncementService {
     // sorted newest first, max 50 from NUST LMS
     public List<Announcement> getRecentAnnouncements(int userId, int limit) throws Exception {
 
-        System.out.println("[AnnouncementService] Fetching announcements for userId=" + userId);
+        System.out.println("[AnnouncementService] Fetching announcements for userId = " + userId);
 
         // calling core_message_get_messages: type=notifications skips private chats
         // read=0 means unread only, limitnum capped at 50 by the server
