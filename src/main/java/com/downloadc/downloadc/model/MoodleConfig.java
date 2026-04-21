@@ -29,13 +29,17 @@ public class MoodleConfig {
     public String getToken()    { return token; }
     public String getBaseUrl()  { return BASE_URL; }
     public int getUserId() { return userId; }
-
+    public String getTimezone() { return timezone; }
+    
     //SETTER
     public void setToken(String token) {
         this.token = token;
     }
     public void setUserId(int userId) { this.userId = userId; }
 
+    public void setTimezone(String timezone) { 
+        this.timezone = timezone; 
+    }
     // Prints the object for debugging
     @Override
     public String toString() {
