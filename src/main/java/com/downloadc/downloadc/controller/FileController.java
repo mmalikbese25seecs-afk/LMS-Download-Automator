@@ -12,7 +12,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.Map;
+import java.util.Map;;
 
 // Controller for course files and downloading
 @RestController
@@ -45,11 +45,11 @@ public class FileController {
 
             // create course object 
 
-            Course course = new Course(courseId, "", String.valueOf(courseId), "");
+           Course course = new Course(courseId, "", String.valueOf(courseId), "");
 
-            List<CourseFile> files = fileService.getFilesForCourse(course);
+            // return files
+            return ResponseEntity.ok(fileService.getFilesForCourse(course));
 
-            return ResponseEntity.ok(files);
 
         } 
         catch (Exception e) {
@@ -58,57 +58,63 @@ public class FileController {
     }
 
     // download all files of a course
-    @PostMapping("/download/{courseId}")
-    public ResponseEntity<?> downloadCourse(@PathVariable int courseId,@RequestBody Map<String, String> body) {
+@PostMapping("/download/{courseId}")
+    public ResponseEntity<?> downloadCourse(
+            @PathVariable int courseId,
+            @RequestBody Map<String, String> body) {
 
-        if (!sessionManager.isLoggedIn()) {
-            return ResponseEntity.status(401) .body(Map.of("error", "Not logged in."));
-        }
+        // check login
+        if (!sessionManager.isLoggedIn())
+            return ResponseEntity.status(401).body(Map.of("error", "Not logged in."));
 
         try {
+            // setup api + downloader
             MoodleApiClient apiClient = new MoodleApiClient(sessionManager.getActiveConfig());
             FileService fileService = new FileService(apiClient);
+            FileDownloader fileDownloader = new FileDownloader(
+                    sessionManager.getActiveConfig(), historyService);
 
-            // Pass history service so downloads get saved
-            FileDownloader fileDownloader =new FileDownloader(sessionManager.getActiveConfig(), historyService);
-
+            // get course name
             String shortName = body.getOrDefault("shortName", String.valueOf(courseId));
-
             Course course = new Course(courseId, "", shortName, "");
 
+            // get all files
             List<CourseFile> files = fileService.getFilesForCourse(course);
 
-            int downloaded = 0;
-            int skipped = 0;
-            int failed = 0;
+            // counters
+            int downloaded = 0, updated = 0, resumed = 0, skipped = 0, failed = 0;
 
-            // loop through all files
+            // loop through files
             for (CourseFile file : files) {
                 try {
-                    if (fileDownloader.download(file))
-                        downloaded++;
-                    else
-                        skipped++;
-
+                    // call downloader and count result
+                    switch (fileDownloader.download(file)) {
+                        case DOWNLOADED -> downloaded++;
+                        case UPDATED -> updated++;
+                        case RESUMED ->resumed++;
+                        case SKIPPED -> skipped++;
+                        case FAILED ->failed++;
+                    }
                 } catch (Exception e) {
                     failed++;
-
-                    System.out.println("Download failed: "
-                            + file.getFileName() + " - " + e.getMessage());
+                    System.out.println("Failed : "
+                            + file.getFileName() + " — " + e.getMessage());
                 }
             }
 
+            // return summary
             return ResponseEntity.ok(Map.of(
                     "courseId", courseId,
+                    "totalFiles", files .size(),
                     "downloaded", downloaded,
+                    "updated", updated,
+                    "resumed", resumed,
                     "skipped", skipped,
-                    "failed", failed,
-                    "totalFiles", files.size()
+                    "failed", failed
             ));
 
         } catch (Exception e) {
-            return ResponseEntity.status(500)
-                    .body(Map.of("error", e.getMessage()));
+            return ResponseEntity.status(500).body(Map.of("Error", e.getMessage()));
         }
     }
 }
