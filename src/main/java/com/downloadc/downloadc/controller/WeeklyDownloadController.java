@@ -1,4 +1,3 @@
-
 package com.downloadc.downloadc.controller;
 
 import com.downloadc.downloadc.api.DownloadHistoryService;
@@ -51,77 +50,75 @@ public class WeeklyDownloadController {
         }
     }
 
-    //download specific weeks
+    // download selected weeks
+@PostMapping("/{courseId}/weeks/download")
+public ResponseEntity<?> downloadWeeks(
+@PathVariable int courseId,
+@RequestBody Map<String,Object> body){
 
-    @PostMapping("/{courseId}/weeks/download")
-    public ResponseEntity<?> downloadWeeks(
-            @PathVariable int courseId,
-            @RequestBody  Map<String, Object> body) {
+// login check
+if(!sessionManager.isLoggedIn())
+return ResponseEntity.status(401).body(Map.of("error","Not logged in"));
 
-        // Should be logged in
-        if (!sessionManager.isLoggedIn())
-            return ResponseEntity.status(401).body(Map.of("error", "Not logged in."));
+String shortName=(String)body.getOrDefault("shortName",String.valueOf(courseId));
 
-        String shortName = (String) body.getOrDefault("shortName",String.valueOf(courseId));
+// week list
+@SuppressWarnings("unchecked")
+List<Integer> requested=(List<Integer>)body.get("sectionNumbers");
 
-        // Get week numbers from request body
+// validate
+if(requested==null || requested.isEmpty())
+return ResponseEntity.badRequest().body(Map.of("error","no weeks"));
 
-        @SuppressWarnings("unchecked")
+try{
 
-        List<Integer> requested = (List<Integer>) body.get("sectionNumbers");
+MoodleApiClient client=new MoodleApiClient(sessionManager.getActiveConfig());
+    
+WeeklyFileService wService=new WeeklyFileService(client);
+    
+FileDownloader dl=new FileDownloader(sessionManager.getActiveConfig(),historyService);
 
-        // Make sure user actually gave some week numbers
-        if (requested == null || requested.isEmpty()) {
-            return ResponseEntity.badRequest()
-                    .body(Map.of("error", "No section numbers provided"));
-        }
+// Get all weeks
+List<WeeklySection> allWeeks=wService.getWeeklySections(courseId,shortName);
 
-        try {
-            // setup everything for downloading
-            MoodleApiClient   client= new MoodleApiClient(sessionManager.getActiveConfig());
-            WeeklyFileService wService = new WeeklyFileService(client);
-            FileDownloader    dl = new FileDownloader(
-                    sessionManager.getActiveConfig(), historyService);
+int downloaded=0,updated=0,resumed=0,skipped=0,failed=0;
 
-            // Get all weeks first
-            List<WeeklySection> allWeeks =
-                    wService.getWeeklySections(courseId, shortName);
+for(WeeklySection week:allWeeks){
 
-            int downloaded = 0, skipped = 0, failed = 0;
+// Skip unselected
+if(!requested.contains(week.getSectionNumber())) continue;
 
-            // loop through weeks but only download selected ones
+// Loops files
+for(CourseFile file:week.getFiles()){
 
-            for (WeeklySection week : allWeeks) {
+try{
 
-                if (!requested.contains(week.getSectionNumber())) continue;
+switch(dl.download(file)){
+case DOWNLOADED -> downloaded++;
+case UPDATED -> updated++;
+case RESUMED -> resumed++;
+case SKIPPED -> skipped++;
+case FAILED -> failed++;
+}
 
-                for (CourseFile file : week.getFiles()) {
-                    try {
-                        if (dl.download(file)){
-                         downloaded++;
-                          }
-                        else{
-                         skipped++;
-                            }
-                    }
-                     catch (Exception e) {
-                        failed++;
-                        // Print error, don't crash everything
-                        System.out.println("[WeeklyDownloadController] Failed: "
-                                + file.getFileName() + " — " + e.getMessage());
-                    }
-                }
-            }
+}catch(Exception e){
+failed++;
+System.out.println("fail "+file.getFileName()+" "+e.getMessage());
+     }
+  }
+}
 
-            // Send back results
-            return ResponseEntity.ok(Map.of(
-                "downloaded", downloaded,
-                "skipped",skipped,
-                "failed", failed
-            ));
+// result map
+return ResponseEntity.ok(Map.of(
+"downloaded",downloaded,
+"updated",updated,
+"resumed",resumed,
+"skipped",skipped,
+"failed",failed
+));
 
-        } catch (Exception e) {
-            return ResponseEntity.status(500).body(Map.of("error", e.getMessage()));
-        }
-    }
+}catch(Exception e){
+return ResponseEntity.status(500).body(Map.of("error",e.getMessage()));
+  }
+ }
 }
