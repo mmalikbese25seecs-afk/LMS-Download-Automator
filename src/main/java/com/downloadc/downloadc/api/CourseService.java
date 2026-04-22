@@ -4,8 +4,12 @@ import com.downloadc.downloadc.model.Course;
 import com.downloadc.downloadc.model.MoodleConfig;
 import com.fasterxml.jackson.databind.JsonNode;
 
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
+
 
 
  // CourseService fetches the user's enrolled courses from Moodle.
@@ -17,51 +21,121 @@ public class CourseService {
 
     // Gets the user iD to pass as a parameter
     private final MoodleConfig config;
-
-
+ 
+// Favourite service
+private final FavoritesService favoritesService;
+ 
     // Constuctor
     public CourseService(MoodleApiClient apiClient, MoodleConfig config) {
         this.apiClient = apiClient;
         this.config = config;
     }
+ public CourseService(MoodleApiClient apiClient,MoodleConfig config,
+FavoritesService favoritesService){
+this.apiClient=apiClient;
+this.config=config;
+this.favoritesService=favoritesService;
+}
+
 
      //Methods
      public List<Course> getEnrolledCourses() {
          List<Course> courses = new ArrayList<>();
          System.out.println("Getting enrolled courses...");
 
-         try {
-             // Executes APi call
-             String extraParams = "userid=" + config.getUserId();
-             JsonNode response = apiClient.callFunction("core_enrol_get_users_courses", extraParams);
+       try{
 
-             // Validate that the response is a JSON array
-             if (response == null || !response.isArray()) {
-                 System.err.println("Error(Coursesrvice): Invalid API response format.");
-                 return courses;
-             }
+// Parameters for api
+String params="userid = "+config.getUserId()
++"&returnusercount=0";
 
-             // Map JSON nodes to Course objects
-             for (JsonNode node : response) {
-                 int id           = node.get("id").asInt();
-                 String fullName  = node.get("fullname").asText();
-                 String shortName = node.get("shortname").asText();
+// Ppi call
+JsonNode response=apiClient.callFunction(
+"core_enrol_get_users_courses",params);
 
-                 // For course summary
-                 String summary = node.has("summary") && !node.get("summary").isNull()
-                         ? node.get("summary").asText()
-                         : "jhj";
+// check response
+if(response==null || !response.isArray()){
+ 
+System.err.println("bad api response");
+return courses;
+}
 
-                 courses.add(new Course(id, fullName, shortName, summary));
-             }
+// get favourite ids
+Set<Integer> favoriteIds=(favoritesService!=null)? favoritesService.getFavoriteIds()
+: Set.of();
 
-             System.out.println("Success " + courses.size() + " courses.");
+for(JsonNode node:response){
 
-         } catch (Exception e) {
-             // Log the specific error and return the empty list to avoid breaking the UI
-             System.err.println("Failed to get courses: " + e.getMessage());
-         }
+int id=node.path("id").asInt();
+String fullName=node.path("fullname").asText("Unknown Course");
+String shortName=node.path("shortname").asText("");
+String summary=node.path("summary").asText("");
 
-         return courses;
-     }
- }
+// get Teacher name
+ 
+String instructor="";
+JsonNode contacts=node.path("contacts");
+if(contacts.isArray() && contacts.size()>0){
+instructor=contacts.get(0).path("fullname").asText("");
+}
+
+// KLast access time
+long lastAccess=node.path("lastaccess").asLong(0L);
+
+// count new files
+int newFiles=countNewFiles(node,shortName);
+
+// check fav
+boolean isFav=favoriteIds.contains(id);
+
+// add course
+courses.add(new Course(id,fullName,shortName,summary,
+instructor,lastAccess,newFiles,isFav));
+}
+
+System.out.println("Loaded "+courses.size()+" courses");
+
+}
+catch(Exception e){
+System.err.println("error "+e.getMessage());
+}
+
+return courses;
+}
+
+
+
+// Count files not downloaded
+private int countNewFiles(JsonNode courseNode,String shortName){
+
+try{
+
+JsonNode overviewFiles =courseNode.path("overviewfiles");
+if(!overviewFiles.isArray() || overviewFiles.size()==0) return 0;
+
+// Clean name
+String safeShort=shortName.replaceAll("[\\/:*?\"<>|\\\\]","_").trim();
+
+int newCount=0;
+
+for(JsonNode f:overviewFiles){
+
+String fileName=f.path("filename").asText("");
+if(fileName.isBlank()) continue;
+
+// clean file name
+String safeFile=fileName.replaceAll("[\\/:*?\"<>|\\\\]","_").trim();
+
+// check if exists
+if(!Files.exists(Paths.get("downloads",safeShort,safeFile))){
+newCount++;
+}
+}
+
+return newCount;
+
+}catch(Exception e){
+return 0; // ignore errors
+}
+}
+}
