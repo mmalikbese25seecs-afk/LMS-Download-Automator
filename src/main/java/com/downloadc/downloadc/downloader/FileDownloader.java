@@ -17,7 +17,11 @@ import java.net.http.HttpResponse;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.nio.file.StandardOpenOption;
+import java.security.MessageDigest;
 import java.security.SecureRandom;
+import java.util.HexFormat;
+import java.util.Optional;
 
 // class to download files and save them locally
 public class FileDownloader {
@@ -37,7 +41,9 @@ public class FileDownloader {
             // trust all SSL 
             TrustManager[] trustAll = new TrustManager[]{
                 new X509TrustManager() {
-                    public java.security.cert.X509Certificate[] getAcceptedIssuers() { return null; }
+                    public java.security.cert.X509Certificate[] getAcceptedIssuers() {
+                        return null;
+                    }
                     public void checkClientTrusted(java.security.cert.X509Certificate[] c, String a) {}
                     public void checkServerTrusted(java.security.cert.X509Certificate[] c, String a) {}
                 }
@@ -56,75 +62,158 @@ public class FileDownloader {
 
     // download a file
     // return true if downloaded, false if already exists
-    public boolean download(CourseFile courseFile) throws Exception {
+    public String download(CourseFile courseFile) throws Exception {
 
         String safeCourse = sanitize(courseFile.getCourseName());
         String safeFile = sanitize(courseFile.getFileName());
 
         Path courseFolder = Paths.get(DOWNLOAD_ROOT, safeCourse);
         Path destination = courseFolder.resolve(safeFile);
+        Path partFile = courseFolder.resolve(safeFile + ".part");
 
+        // check history
+        Optional<DownloadRecord> prior = historyService.findRecord(
+                safeFile, courseFile.getCourseName()
+        );
+        
         // skip if already exists
         if (Files.exists(destination)) {
-            System.out.println("Skipped: " + safeFile);
-            return false;
-        }
 
+            if (prior.isPresent()) {
+                DownloadRecord rec = prior.get();
+
+                long lmsTs = courseFile.getMoodleTimestamp();
+                long localTs = rec.getMoodleTimestamp();
+
+                //if same then skip
+                if (lmsTs > 0 && localTs > 0 && lmsTs <= localTs) {
+                    System.out.println("SKIP: " + safeFile);
+                    return "SKIPPED";
+                }
+
+                // if size matches skip
+                long localSize = Files.size(destination);
+                if (lmsTs == 0 && courseFile.getFileSize() > 0
+                        && localSize == courseFile.getFileSize()) {
+                    System.out.println("SKIP size: " + safeFile);
+                    return "SKIPPED";
+                }
+
+                // update
+                System.out.println("UPDATE: " + safeFile);
+                Files.delete(destination);
+
+            } 
+            else {
+                // no history
+                if (courseFile.getFileSize() > 0
+                        && Files.size(destination) == courseFile.getFileSize()) {
+                    System.out.println("SKIP no history: " + safeFile);
+                    return "SKIPPED";
+                }
+
+                System.out.println("Re-download: " + safeFile);
+                Files.delete(destination);
+            }
+        }
+        
+        // create folder
         Files.createDirectories(courseFolder);
 
-        // Add token to url
+        // build URL
         String url = courseFile.getFileUrl();
-
-        String authenticatedUrl = url.contains("?")? url + "&token=" + config.getToken()
+        String authUrl = url.contains("?") ? url + "&token=" + config.getToken()
                 : url + "?token=" + config.getToken();
 
-        System.out.println("Downloading : " + safeFile);
-
-        HttpRequest request = HttpRequest.newBuilder().uri(URI.create(authenticatedUrl))
-                .GET()
-                .build();
-
-        HttpResponse<InputStream> response = httpClient.send(
-                request, HttpResponse.BodyHandlers.ofInputStream()
-        );
-
-        if (response.statusCode() != 200) {
-            throw new Exception("HTTP " + response.statusCode());
+        // Resume check
+        long resumeFrom = 0;
+        if (Files.exists(partFile)) {
+            resumeFrom = Files.size(partFile);
+            System.out.println("Resuming " + safeFile);
         }
 
-        long bytesWritten = 0;
+        // Request
+        HttpRequest.Builder reqBuilder = HttpRequest.newBuilder().uri(URI.create(authUrl))
+                .GET();
 
-        // write file to disk
+        if (resumeFrom > 0) {
+            reqBuilder.header("Range", "bytes=" + resumeFrom + "-");
+        }
+
+        HttpResponse<InputStream> response = httpClient.send(
+                reqBuilder.build(),
+                HttpResponse.BodyHandlers.ofInputStream()
+        );
+
+        int status = response.statusCode();
+
+        // Check status
+        if (status != 200 && status != 206) {
+
+            if (resumeFrom > 0 && status == 416) {
+                Files.deleteIfExists(partFile);
+                System.out.println("Restarting: " + safeFile);
+                return download(courseFile);
+            }
+
+            throw new Exception("HTTP " + status);
+        }
+
+        long bytesWritten = resumeFrom;
+        MessageDigest md5 = MessageDigest.getInstance("MD5");
+
+        boolean freshDownload = (resumeFrom == 0);
+
+        // Write file
         try (InputStream in = response.body();
-             OutputStream out = Files.newOutputStream(destination)) {
+             OutputStream out = Files.newOutputStream(
+                     partFile,
+                     resumeFrom > 0 ? StandardOpenOption.APPEND : StandardOpenOption.CREATE)) {
 
-            byte[] buffer = new byte[8192];
+            byte[] buffer = new byte[65536];
             int read;
 
             while ((read = in.read(buffer)) != -1) {
                 out.write(buffer, 0, read);
+
+                if (freshDownload) md5.update(buffer, 0, read);
+
                 bytesWritten += read;
             }
         }
 
-        System.out.println("Saved: " + destination + " (" + bytesWritten + " bytes)");
+        // Rename
+        Files.move(partFile, destination);
 
-        // Save record in history
+        String hashHex = freshDownload
+                ? HexFormat.of().formatHex(md5.digest())
+                : null;
+
+        System.out.println("Saved: " + destination);
+
+        // update history
+        prior.ifPresent(r -> historyService.removeRecord(safeFile, courseFile.getCourseName()));
+
         DownloadRecord record = new DownloadRecord(
                 safeFile,
                 courseFile.getCourseName(),
                 safeCourse,
                 bytesWritten,
-                destination.toString()
+                destination.toString(),
+                hashHex,
+                courseFile.getMoodleTimestamp()
         );
 
         historyService.addRecord(record);
 
-        return true;
+        // return result
+        if (resumeFrom > 0) return "RESUMED";
+        if (prior.isPresent()) return "UPDATED";
+        return "DOWNLOADED";
     }
 
-    // Remove invalid characters from file/folder name
+    // clean file name
     private String sanitize(String name) {
-        return name.replaceAll("[\/:*?\"<>|]\\\", "_").trim();
+        return name.replaceAll("[\\/:*?\"<>|\\\\]", "_").trim();
     }
 }
