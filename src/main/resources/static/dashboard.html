@@ -3,1329 +3,1078 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>
-        NUST LMS — Dashboard
-    </title>
-
+    <title>NUST LMS — Dashboard</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
-
     <style>
-        :root {
-            --bs-body-bg:    #0b0d15;
-            --bs-body-color: #dde1f0;
-            --surface:       #10121d;
-            --card-bg:       #161929;
-            --border-color:  #222640;
-            --accent:        #4f8ef7;
-            --accent-glow:   rgba(79,142,247,0.18);
-            --red:           #e74c3c;
-            --orange:        #e67e22;
-            --green:         #2dd4bf;
-            --purple:        #a78bfa;
-            --muted:         #5a6080;
-            --font-main:     'DM Sans', sans-serif;
-            --font-mono:     'JetBrains Mono', monospace;
+        :root{
+            --bg:#0b0d15;--surface:#10121d;--card:#161929;--border:#222640;--accent:#4f8ef7;--glow:rgba(79,142,247,0.18);--red:#e74c3c;--orange:#e67e22;--green:#2dd4bf;--purple:#a78bfa;--yellow:#f59e0b;--muted:#5a6080;--font:'DM Sans',sans-serif;--mono:'JetBrains Mono',monospace
         }
-
-        * {
-            box-sizing: border-box;
+        *{
+            box-sizing:border-box
         }
-        body {
-            font-family: var(--font-main); background: var(--bs-body-bg); color: var(--bs-body-color); min-height: 100vh;
+        body{
+            font-family:var(--font);background:var(--bg);color:#dde1f0;min-height:100vh
         }
-
-        /* ── Navbar ── */
-        .topnav {
-            background: var(--surface); border-bottom: 1px solid var(--border-color); height: 58px; position: sticky; top: 0; z-index: 1030;
+        .topnav{
+            background:var(--surface);border-bottom:1px solid var(--border);height:58px;position:sticky;top:0;z-index:1030
         }
-        .nav-brand {
-            font-size: 1.05rem; font-weight: 800; letter-spacing: 0.3px; color: var(--bs-body-color); text-decoration: none;
+        .nav-brand{
+            font-size:1.05rem;font-weight:800;color:#dde1f0;text-decoration:none
         }
-        .nav-brand span {
-            color: var(--accent);
+        .nav-brand span{color:var(--accent)
         }
-        .nav-pill {
-            padding: 5px 14px; border-radius: 8px; font-size: 0.84rem; color: var(--muted); text-decoration: none; border: 1px solid transparent; transition: all 0.15s; font-weight: 500;
+        .nav-pill{
+            padding:5px 14px;border-radius:8px;font-size:.84rem;color:var(--muted);text-decoration:none;border:1px solid transparent;transition:all .15s;font-weight:500
         }
-        .nav-pill:hover {
-            background: var(--card-bg); color: var(--bs-body-color); border-color: var(--border-color);
+        .nav-pill:hover{
+            background:var(--card);color:#dde1f0;border-color:var(--border)
         }
-        .nav-pill.active {
-            background: var(--accent); color: #fff; border-color: var(--accent);
+        .nav-pill.active{
+            background:var(--accent);color:#fff;border-color:var(--accent)
         }
-        .user-avatar {
-            width: 32px; height: 32px; border-radius: 50%; background: var(--accent); font-size: 0.82rem; font-weight: 800; color: #fff; display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+        .user-avatar{
+            width:32px;height:32px;border-radius:50%;background:var(--accent);font-size:.82rem;font-weight:800;color:#fff;display:flex;align-items:center;justify-content:center;flex-shrink:0
         }
-        .btn-logout {
-            background: transparent; border: 1px solid var(--border-color); color: var(--muted); font-size: 0.8rem; padding: 4px 12px; border-radius: 7px; transition: all 0.15s; font-family: var(--font-main); cursor: pointer;
+        .btn-logout{
+            background:transparent;border:1px solid var(--border);color:var(--muted);font-size:.8rem;padding:4px 12px;border-radius:7px;transition:all .15s;cursor:pointer;font-family:var(--font)
         }
-        .btn-logout:hover {
-            border-color: var(--red); color: var(--red); background: rgba(231,76,60,0.07);
+        .btn-logout:hover{
+            border-color:var(--red);color:var(--red)
         }
-
-        /* ── Layout ── */
-        .page-wrap {
-            max-width: 1240px; margin: 0 auto; padding: 28px 20px;
+        .page-wrap{
+            max-width:1280px;margin:0 auto;padding:28px 20px
         }
-
-        /* ── Stat Cards ── */
-        .stat-card {
-            background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 14px; padding: 20px 22px; transition: transform 0.15s, box-shadow 0.15s;
+        .stat-card{
+            background:var(--card);border:1px solid var(--border);border-radius:14px;padding:20px 22px;transition:transform .15s,box-shadow .15s
         }
-        .stat-card:hover {
-            transform: translateY(-2px); box-shadow: 0 8px 24px rgba(0,0,0,0.3);
+        .stat-card:hover{
+            transform:translateY(-2px);box-shadow:0 8px 24px rgba(0,0,0,.3)
         }
-        .stat-label {
-            font-size: 0.72rem; font-weight: 600; letter-spacing: 0.8px; text-transform: uppercase; color: var(--muted); margin-bottom: 6px;
+        .stat-label{
+            font-size:.72rem;font-weight:600;letter-spacing:.8px;text-transform:uppercase;color:var(--muted);margin-bottom:6px
         }
-        .stat-value {
-            font-size: 2.2rem; font-weight: 800; line-height: 1; font-family: var(--font-mono);
+        .stat-value{
+            font-size:2.2rem;font-weight:800;line-height:1;font-family:var(--mono)
         }
-        .stat-sub {
-            font-size: 0.76rem; color: var(--muted); margin-top: 5px;
+        .stat-sub{
+            font-size:.76rem;color:var(--muted);margin-top:5px
         }
-        .val-blue   {
-            color: var(--accent);
+        .val-blue{
+            color:var(--accent)
         }
-        .val-red    {
-            color: var(--red);
+        .val-red{
+            color:var(--red)
         }
-        .val-green  {
-            color: var(--green);
+        .val-green{
+            color:var(--green)
         }
-        .val-purple {
-            color: var(--purple);
+        .val-purple{
+            color:var(--purple)
         }
-
-        /* ── Section Card ── */
-        .section-card {
-            background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 14px; overflow: hidden;
+        .section-card{
+            background:var(--card);border:1px solid var(--border);border-radius:14px;overflow:hidden
         }
-        .section-head {
-            padding: 14px 20px; border-bottom: 1px solid var(--border-color); display: flex; align-items: center; justify-content: space-between;
+        .section-head{
+            padding:14px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between
         }
-        .section-head h2 {
-            font-size: 0.92rem; font-weight: 700; margin: 0;
+        .section-head h2{
+            font-size:.92rem;font-weight:700;margin:0
         }
-        .head-badge {
-            font-size: 0.72rem; background: var(--surface); border: 1px solid var(--border-color); color: var(--muted); padding: 3px 10px; border-radius: 20px; font-weight: 500;
+        .head-badge{
+            font-size:.72rem;background:var(--surface);border:1px solid var(--border);color:var(--muted);padding:3px 10px;border-radius:20px;font-weight:500
         }
-
-        /* ── Course Row ── */
-        .course-row {
-            border-bottom: 1px solid var(--border-color); transition: background 0.12s;
+        .course-row{
+            border-bottom:1px solid var(--border);transition:background .12s
         }
-        .course-row:last-child {
-            border-bottom: none;
+        .course-row:last-child{
+            border-bottom:none
         }
-        .course-header {
-            padding: 13px 20px; display: flex; align-items: center; justify-content: space-between; gap: 12px; cursor: pointer; user-select: none;
+        .course-row.is-fav{border-left:3px solid var(--yellow)
         }
-        .course-header:hover {
-            background: rgba(79,142,247,0.05);
+        .course-header{
+            padding:12px 18px;display:flex;align-items:center;gap:10px;cursor:pointer;user-select:none
         }
-        .course-chevron {
-            color: var(--muted); font-size: 0.75rem; transition: transform 0.2s; flex-shrink: 0;
+        .course-header:hover{
+            background:rgba(79,142,247,.05)
         }
-        .course-chevron.open {
-            transform: rotate(90deg);
+        .course-chevron{
+            color:var(--muted);font-size:.75rem;transition:transform .2s;flex-shrink:0
         }
-        .course-name {
-            font-size: 0.88rem; font-weight: 600; color: var(--bs-body-color);
+        .course-chevron.open{
+            transform:rotate(90deg)
         }
-        .course-code {
-            font-size: 0.73rem; color: var(--muted); margin-top: 2px; font-family: var(--font-mono);
+        .course-name{
+            font-size:.88rem;font-weight:600;color:#dde1f0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap
         }
-
-        /* ── Course Actions Row ── */
-        .course-actions {
-            display: flex; gap: 6px; flex-wrap: wrap; align-items: center; flex-shrink: 0;
+        .course-meta{
+            font-size:.72rem;color:var(--muted);margin-top:2px;display:flex;gap:10px;flex-wrap:wrap
         }
-
-        /* ── Expanded Course Panel ── */
-        .course-panel {
-            display: none; border-top: 1px solid var(--border-color); background: rgba(0,0,0,0.15); padding: 0;
+        .course-meta i{
+            font-size:.75rem
         }
-        .course-panel.open {
-            display: block;
+        .new-badge{
+            font-size:.68rem;font-weight:800;background:var(--red);color:#fff;border-radius:10px;padding:2px 7px;flex-shrink:0
         }
-
-        /* ── Week Tabs ── */
-        .week-tabs {
-            display: flex; gap: 0; overflow-x: auto; border-bottom: 1px solid var(--border-color); padding: 0 16px; scrollbar-width: thin;
+        .btn-star{
+            background:transparent;border:none;cursor:pointer;font-size:1rem;padding:0 2px;transition:transform .15s;flex-shrink:0
         }
-        .week-tab {
-            padding: 10px 14px; font-size: 0.78rem; font-weight: 600; color: var(--muted); cursor: pointer; border-bottom: 2px solid transparent; white-space: nowrap; transition: all 0.15s; flex-shrink: 0;
+        .btn-star:hover{
+            transform:scale(1.25)
         }
-        .week-tab:hover {
-            color: var(--bs-body-color);
+        .btn-star.starred{
+            color:var(--yellow)
         }
-        .week-tab.active {
-            color: var(--accent); border-bottom-color: var(--accent);
+        .btn-star.unstarred{
+            color:var(--muted)
         }
-        .week-tab.has-files::after {
-            content: ''; display: inline-block; width: 6px; height: 6px; border-radius: 50%; background: var(--accent); margin-left: 6px; vertical-align: middle;
+        .course-actions{
+            display:flex;gap:6px;flex-wrap:wrap;align-items:center;flex-shrink:0;margin-left:auto
         }
-
-        /* ── File List ── */
-        .file-list {
-            padding: 12px 16px;
+        .course-panel{
+            display:none;border-top:1px solid var(--border);background:rgba(0,0,0,.15)
+        }.course-panel.open{
+                     display:block
+                 }
+        .week-tabs{
+            display:flex;overflow-x:auto;border-bottom:1px solid var(--border);padding:0 16px;scrollbar-width:thin
         }
-        .file-item {
-            display: flex; align-items: center; gap: 10px; padding: 8px 10px; border-radius: 8px; transition: background 0.12s;
+        .week-tab{
+            padding:9px 13px;font-size:.77rem;font-weight:600;color:var(--muted);cursor:pointer;border-bottom:2px solid transparent;white-space:nowrap;transition:all .15s;flex-shrink:0;user-select:none
         }
-        .file-item:hover {
-            background: rgba(255,255,255,0.04);
+        .week-tab:hover{
+            color:#dde1f0
         }
-        .file-icon {
-            width: 28px; height: 28px; border-radius: 6px; display: flex; align-items: center; justify-content: center; font-size: 0.9rem; flex-shrink: 0;
+        .week-tab.active{
+            color:var(--accent);border-bottom-color:var(--accent)
         }
-        .file-name {
-            font-size: 0.82rem; font-weight: 500; flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+        .week-tab.has-files::after{
+            content:'';display:inline-block;width:6px;height:6px;border-radius:50%;background:var(--accent);margin-left:6px;vertical-align:middle
         }
-        .file-size {
-            font-size: 0.72rem; color: var(--muted); font-family: var(--font-mono); flex-shrink: 0;
+        .panel-toolbar{
+            padding:10px 16px;display:flex;align-items:center;justify-content:space-between;gap:8px;border-bottom:1px solid var(--border);flex-wrap:wrap
         }
-        .file-drive-badge {
-            font-size: 0.68rem; background: rgba(45,212,191,0.15); color: var(--green); border: 1px solid rgba(45,212,191,0.3); padding: 2px 7px; border-radius: 10px; flex-shrink: 0;
+        .toolbar-left{
+            display:flex;gap:6px;flex-wrap:wrap;align-items:center
         }
-
-        /* ── Panel Toolbar ── */
-        .panel-toolbar {
-            padding: 10px 16px; display: flex; align-items: center; justify-content: space-between; gap: 10px; border-bottom: 1px solid var(--border-color); flex-wrap: wrap;
+        .type-chip{
+            padding:4px 11px;border-radius:20px;font-size:.74rem;font-weight:600;cursor:pointer;border:1px solid var(--border);background:transparent;color:var(--muted);transition:all .15s;white-space:nowrap
         }
-        .toolbar-left {
-            display: flex; gap: 7px; flex-wrap: wrap;
+        .type-chip:hover{
+            border-color:var(--accent);color:var(--accent)
         }
-
-        /* ── Buttons ── */
-        .btn-sm-action {
-            display: inline-flex; align-items: center; gap: 5px; padding: 5px 12px; border-radius: 7px; font-size: 0.78rem; font-weight: 600; cursor: pointer; border: 1px solid var(--border-color); background: var(--surface); color: var(--bs-body-color); transition: all 0.15s; font-family: var(--font-main); white-space: nowrap;
+        .type-chip.active{background:var(--accent);border-color:var(--accent);color:#fff
         }
-        .btn-sm-action:hover {
-            border-color: var(--accent); color: var(--accent); background: var(--accent-glow);
+        .file-list{
+            padding:8px 14px
         }
-        .btn-sm-action:disabled {
-            opacity: 0.45; cursor: not-allowed; pointer-events: none;
+        .file-item{
+            display:flex;align-items:center;gap:9px;padding:7px 8px;border-radius:7px;transition:background .12s
         }
-        .btn-sm-action.primary {
-            background: var(--accent); border-color: var(--accent); color: #fff;
+        .file-item:hover{
+            background:rgba(255,255,255,.04)
         }
-        .btn-sm-action.primary:hover {
-            background: #3a7be0; border-color: #3a7be0; color: #fff;
+        .file-checkbox{
+            width:15px;height:15px;cursor:pointer;accent-color:var(--accent);flex-shrink:0
         }
-        .btn-sm-action.success {
-            background: var(--green); border-color: var(--green); color: #0b0d15;
+        .file-icon-sm{
+            width:26px;height:26px;border-radius:5px;display:flex;align-items:center;justify-content:center;font-size:.88rem;flex-shrink:0
         }
-        .btn-sm-action.drive {
-            background: rgba(255,255,255,0.06); border-color: #4285F4; color: #8ab4f8;
+        .file-name{
+            font-size:.82rem;font-weight:500;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap
         }
-        .btn-sm-action.drive:hover {
-            background: rgba(66,133,244,0.12); color: #fff;
+        .file-size{
+            font-size:.71rem;color:var(--muted);font-family:var(--mono);flex-shrink:0
         }
-
-        /* ── Drive Status Banner ── */
-        .drive-banner {
-            background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 12px; padding: 14px 18px; display: flex; align-items: center; gap: 12px; flex-wrap: wrap;
+        .btn-sm-act{
+            display:inline-flex;align-items:center;gap:5px;padding:5px 11px;border-radius:7px;font-size:.77rem;font-weight:600;cursor:pointer;border:1px solid var(--border);background:var(--surface);color:#dde1f0;transition:all .15s;font-family:var(--font);white-space:nowrap
         }
-        .drive-dot {
-            width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0;
+        .btn-sm-act:hover{
+            border-color:var(--accent);color:var(--accent);background:var(--glow)
         }
-        .drive-dot.connected {
-            background: var(--green); box-shadow: 0 0 6px var(--green);
+        .btn-sm-act:disabled{
+            opacity:.45;cursor:not-allowed;pointer-events:none
         }
-        .drive-dot.disconnected {
-            background: var(--muted);
+        .btn-sm-act.primary{
+            background:var(--accent);border-color:var(--accent);color:#fff
         }
-        .drive-dot.unconfigured {
-            background: var(--orange);
+        .btn-sm-act.primary:hover{
+            background:#3a7be0;color:#fff}
+        .btn-sm-act.success{
+            background:var(--green);border-color:var(--green);color:#0b0d15
         }
-
-        /* ── Quick Actions ── */
-        .quick-actions {
-            display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 28px;
+        .btn-sm-act.drive{
+            border-color:#4285F4;color:#8ab4f8
         }
-        .action-btn {
-            display: inline-flex; align-items: center; gap: 7px; padding: 9px 16px; border-radius: 9px; border: 1px solid var(--border-color); background: var(--card-bg); color: var(--bs-body-color); text-decoration: none; font-size: 0.84rem; font-weight: 500; cursor: pointer; transition: all 0.15s; font-family: var(--font-main);
+        .btn-sm-act.drive:hover{
+            background:rgba(66,133,244,.12);color:#fff}
+        .quick-actions{
+            display:flex;flex-wrap:wrap;gap:8px;margin-bottom:28px}
+        .action-btn{
+            display:inline-flex;align-items:center;gap:7px;padding:9px 16px;border-radius:9px;border:1px solid var(--border);background:var(--card);color:#dde1f0;text-decoration:none;font-size:.84rem;font-weight:500;cursor:pointer;transition:all .15s;font-family:var(--font)}
+        .action-btn:hover{
+            border-color:var(--accent);color:var(--accent);background:var(--glow)
         }
-        .action-btn:hover {
-            border-color: var(--accent); color: var(--accent); background: var(--accent-glow);
+        .drive-banner{
+            background:var(--card);border:1px solid var(--border);border-radius:12px;padding:14px 18px;display:flex;align-items:center;gap:12px;flex-wrap:wrap
         }
-
-        /* ── Deadline Items ── */
-        .deadline-item {
-            padding: 12px 18px; border-bottom: 1px solid var(--border-color); display: flex; gap: 11px; align-items: flex-start;
+        .drive-dot{
+            width:8px;height:8px;border-radius:50%;flex-shrink:0}.drive-dot.on{background:var(--green);box-shadow:0 0 6px var(--green)}.drive-dot.off{background:var(--muted)}.drive-dot.nc{background:var(--orange)
+                                                                                                                                                                                      }
+        .changes-bar{
+            background:rgba(245,158,11,.08);border:1px solid rgba(245,158,11,.28);border-radius:10px;padding:11px 18px;display:flex;align-items:center;gap:10px;flex-wrap:wrap;font-size:.84rem
         }
-        .deadline-item:last-child {
-            border-bottom: none;
+        .deadline-item{
+            padding:12px 18px;border-bottom:1px solid var(--border);display:flex;gap:10px;align-items:flex-start}.deadline-item:last-child{border-bottom:none
+                                                                                                                         }
+        .dl-dot{
+            width:9px;height:9px;border-radius:50%;margin-top:5px;flex-shrink:0
         }
-        .dl-dot {
-            width: 9px; height: 9px; border-radius: 50%; margin-top: 5px; flex-shrink: 0;
+        .dl-title{
+            font-size:.84rem;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap
         }
-        .dl-title {
-            font-size: 0.85rem; font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+        .dl-course{
+            font-size:.72rem;color:var(--muted);margin-top:2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap
         }
-        .dl-course {
-            font-size: 0.73rem; color: var(--muted); margin-top: 2px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+        .dl-when{
+            font-size:.72rem;font-weight:700;white-space:nowrap;flex-shrink:0;padding:3px 9px;border-radius:12px;color:#fff;font-family:var(--mono)
         }
-        .dl-when {
-            font-size: 0.72rem; font-weight: 700; white-space: nowrap; flex-shrink: 0; padding: 3px 9px; border-radius: 12px; color: #fff; font-family: var(--font-mono);
+        .urgent-banner{
+            background:rgba(231,76,60,.08);border:1px solid rgba(231,76,60,.28);border-radius:10px;padding:12px 18px;color:#f87171;font-size:.86rem;display:flex;align-items:center;gap:10px
         }
-
-        /* ── Misc ── */
-        .urgent-banner {
-            background: rgba(231,76,60,0.08); border: 1px solid rgba(231,76,60,0.28); border-radius: 10px; padding: 12px 18px; color: #f87171; font-size: 0.86rem; display: flex; align-items: center; gap: 10px;
+        .modal-bg{
+            position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:2000;display:none;align-items:center;justify-content:center;padding:16px
         }
-        .empty-msg {
-            padding: 24px 20px; text-align: center; color: var(--muted); font-size: 0.84rem;
+        .modal-bg.open{
+            display:flex
         }
-        .loading-row {
-            padding: 20px; text-align: center; color: var(--muted); font-size: 0.82rem;
+        .modal-box{
+            background:var(--card);border:1px solid var(--border);border-radius:16px;padding:26px;width:100%;max-width:480px;max-height:90vh;overflow-y:auto
         }
-        .center-screen {
-            display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 60vh; gap: 14px; color: var(--muted);
+        .modal-box h3{
+            font-size:1.05rem;font-weight:800;margin-bottom:18px
         }
-        .spinner-ring {
-            width: 36px; height: 36px; border: 3px solid var(--border-color); border-top-color: var(--accent); border-radius: 50%; animation: spin 0.7s linear infinite;
+        .radio-option{
+            display:flex;align-items:center;gap:10px;padding:12px 14px;border-radius:9px;border:1px solid var(--border);cursor:pointer;transition:all .15s;margin-bottom:8px
         }
-        .spinner-sm {
-            width: 14px; height: 14px; border: 2px solid rgba(255,255,255,0.3); border-top-color: #fff; border-radius: 50%; animation: spin 0.7s linear infinite; display: inline-block;
+        .radio-option:hover,.radio-option.selected{
+            border-color:var(--accent);background:var(--glow)
         }
-        @keyframes spin {
-            to {
-                transform: rotate(360deg);
+        .radio-option input{
+            accent-color:var(--accent);width:16px;height:16px
+        }
+        .modal-label{
+            font-size:.78rem;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.6px;margin-bottom:8px
+        }
+        .modal-select{
+            width:100%;background:var(--surface);border:1px solid var(--border);color:#dde1f0;border-radius:8px;padding:8px 12px;font-size:.85rem;font-family:var(--font);outline:none
+        }
+        .modal-select:focus{
+            border-color:var(--accent)
+        }
+        .toggle-row{
+            display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--border)
+        }
+        .toggle-row:last-child{
+            border-bottom:none
+        }
+        .toggle{
+            position:relative;width:40px;height:22px;cursor:pointer
+        }
+        .toggle input{
+            opacity:0;width:0;height:0
+        }
+        .slider{
+            position:absolute;inset:0;background:var(--border);border-radius:20px;transition:.3s
+        }
+        .slider::before{
+            content:'';position:absolute;width:16px;height:16px;left:3px;bottom:3px;background:#fff;border-radius:50%;transition:.3s
+        }
+        input:checked+.slider{
+            background:var(--accent)
+        }
+        input:checked+.slider::before{
+            transform:translateX(18px)
+        }
+        .center-screen{
+            display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:60vh;gap:14px;color:var(--muted)
+        }
+        .spinner-ring{
+            width:36px;height:36px;border:3px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin .7s linear infinite
+        }
+        .spinner-sm{
+            width:13px;height:13px;border:2px solid rgba(255,255,255,.3);border-top-color:#fff;border-radius:50%;animation:spin .7s linear infinite;display:inline-block;vertical-align:middle}
+        @keyframes spin{
+            to{
+                transform:rotate(360deg)
             }
         }
-        .toast-custom {
-            position: fixed; bottom: 24px; right: 24px; background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 10px; padding: 13px 18px; font-size: 0.85rem; color: var(--bs-body-color); max-width: 320px; z-index: 9999; opacity: 0; transform: translateY(10px); transition: all 0.25s; pointer-events: none; font-family: var(--font-main);
+        .empty-msg{
+            padding:22px;text-align:center;color:var(--muted);font-size:.84rem
         }
-        .toast-custom.show {
-            opacity: 1; transform: translateY(0);
+        .loading-row{
+            padding:18px;text-align:center;color:var(--muted);font-size:.82rem
         }
-
-        /* ── File type colours ── */
-        .icon-pdf  {
-            background: rgba(231,76,60,0.15);  color: #e74c3c;
+        .toast-custom{
+            position:fixed;bottom:24px;right:24px;background:var(--card);border:1px solid var(--border);border-radius:10px;padding:13px 18px;font-size:.85rem;color:#dde1f0;max-width:340px;z-index:9999;opacity:0;transform:translateY(10px);transition:all .25s;pointer-events:none;font-family:var(--font)}.toast-custom.show{opacity:1;transform:translateY(0)
+                                                                                                                                                                                                                                                                                                                      }
+        .icon-pdf{
+            background:rgba(231,76,60,.15);color:#e74c3c
         }
-        .icon-pptx {
-            background: rgba(230,126,34,0.15); color: #e67e22;
+        .icon-pptx{
+            background:rgba(230,126,34,.15);color:#e67e22
         }
-        .icon-docx {
-            background: rgba(79,142,247,0.15); color: #4f8ef7;
+        .icon-docx{
+            background:rgba(79,142,247,.15);color:#4f8ef7
         }
-        .icon-zip  {
-            background: rgba(167,139,250,0.15);color: #a78bfa;
+        .icon-zip{
+            background:rgba(167,139,250,.15);color:#a78bfa
         }
-        .icon-mp4  {
-            background: rgba(45,212,191,0.15); color: #2dd4bf;
+        .icon-mp4{
+            background:rgba(45,212,191,.15);color:#2dd4bf
         }
-        .icon-xlsx {
-            background: rgba(45,212,191,0.15); color: #2dd4bf;
+        .icon-xlsx{
+            background:rgba(45,212,191,.15);color:#2dd4bf
         }
-        .icon-file {
-            background: rgba(90,96,128,0.2);   color: var(--muted);
+        .icon-file{
+            background:rgba(90,96,128,.2);color:var(--muted)
         }
-
-        @media (max-width: 768px) {
-            .topnav .nav-links {
-                display: none;
-            }
-            .page-wrap {
-                padding: 16px 12px;
-            }
-            .course-actions {
-                gap: 4px;
-            }
+        @media(max-width:768px){
+            .topnav .nav-links{display:none
+            }.page-wrap{padding:16px 12px
+                         }
         }
     </style>
 </head>
 <body>
-
-<!-- Navbar -->
-<nav
-        class="topnav d-flex align-items-center px-4 gap-3">
-    <a
-            class="nav-brand me-3" href="/dashboard.html">NUST
-        <span>
-        LMS
-    </span>
-    </a>
-    <div
-            class="d-flex gap-1 nav-links">
-        <a
-                href="/dashboard.html"  class="nav-pill active">🏠 Dashboard
-        </a>
-        <a
-                href="/calendar.html"   class="nav-pill">📅 Calendar
-        </a>
-        <a
-                href="/summarizer.html" class="nav-pill">🤖 Summarizer
-        </a>
+<nav class="topnav d-flex align-items-center px-4 gap-3">
+    <a class="nav-brand me-3" href="/dashboard.html">NUST <span>LMS</span></a>
+    <div class="d-flex gap-1 nav-links">
+        <a href="/dashboard.html" class="nav-pill active">🏠 Dashboard</a>
+        <a href="/calendar.html" class="nav-pill">📅 Calendar</a>
+        <a href="/files.html" class="nav-pill">📂 Files</a>
+        <a href="/summarizer.html" class="nav-pill">🤖 Summarizer</a>
     </div>
-    <div
-            class="d-flex align-items-center gap-2 ms-auto">
-        <div
-                class="user-avatar" id="avatarLetter">?
-        </div>
-        <span
-                class="d-none d-sm-inline" style="font-size:0.83rem;color:var(--muted)" id="navUserName">Loading...
-        </span>
-        <button
-                class="btn-logout" onclick="logout()">Logout
-        </button>
+    <div class="d-flex align-items-center gap-2 ms-auto">
+        <div class="user-avatar" id="avatarLetter">?</div>
+        <span class="d-none d-sm-inline" style="font-size:.83rem;color:var(--muted)" id="navUserName"></span>
+        <button class="btn-logout" onclick="logout()">Logout</button>
     </div>
 </nav>
 
-<!-- Page -->
-<div
-        class="page-wrap" id="pageContent">
-    <div
-            class="center-screen">
-        <div
-                class="spinner-ring">
+<div class="page-wrap" id="pageContent">
+    <div class="center-screen"><div class="spinner-ring"></div><p style="font-size:.88rem">Loading...</p></div>
+</div>
+
+<!-- Save Destination Modal -->
+<div class="modal-bg" id="saveModal">
+    <div class="modal-box">
+        <h3>📥 Where do you want to save?</h3>
+        <p style="font-size:.83rem;color:var(--muted);margin-bottom:18px" id="saveModalLabel"></p>
+        <div class="radio-option selected" id="opt-device" onclick="selectSaveOpt('device')">
+            <input type="radio" name="saveDest" checked>
+            <div><strong>Download to Device</strong><div style="font-size:.77rem;color:var(--muted);margin-top:2px">Save to downloads/ folder on this machine</div></div>
         </div>
-        <p
-                style="font-size:0.88rem">Loading your Dashboard...
-        </p>
+        <div class="radio-option" id="opt-drive" onclick="selectSaveOpt('drive')">
+            <input type="radio" name="saveDest">
+            <div><strong>Upload to Google Drive</strong><div style="font-size:.77rem;color:var(--muted);margin-top:2px">Download then sync to Drive LMS folder</div></div>
+        </div>
+        <div class="radio-option" id="opt-both" onclick="selectSaveOpt('both')">
+            <input type="radio" name="saveDest">
+            <div><strong>Both — Device &amp; Drive</strong><div style="font-size:.77rem;color:var(--muted);margin-top:2px">Keep local copy and back up to Drive</div></div>
+        </div>
+        <div class="d-flex gap-2 justify-content-end mt-4">
+            <button class="btn-sm-act" onclick="closeSaveModal()">Cancel</button>
+            <button class="btn-sm-act primary" onclick="confirmSave()"><i class="bi bi-download me-1"></i>Start Download</button>
+        </div>
     </div>
 </div>
 
-<div
-        class="toast-custom" id="toast">
+<!-- Schedule Modal -->
+<div class="modal-bg" id="scheduleModal">
+    <div class="modal-box">
+        <h3>⏰ Auto-Sync Schedule</h3>
+        <div class="modal-label">Frequency</div>
+        <div class="radio-option selected" id="sched-manual" onclick="selectSched('manual')">
+            <input type="radio" name="schedMode" checked>
+            <div><strong>Manual Only</strong><div style="font-size:.77rem;color:var(--muted);margin-top:2px">Sync only when you click Sync Now</div></div>
+        </div>
+        <div class="radio-option" id="sched-daily" onclick="selectSched('daily')">
+            <input type="radio" name="schedMode">
+            <div><strong>Daily</strong><div style="font-size:.77rem;color:var(--muted);margin-top:2px">Runs every day at the selected hour</div></div>
+        </div>
+        <div class="radio-option" id="sched-weekly" onclick="selectSched('weekly')">
+            <input type="radio" name="schedMode">
+            <div><strong>Weekly (Every Sunday)</strong><div style="font-size:.77rem;color:var(--muted);margin-top:2px">Downloads week content every Sunday morning</div></div>
+        </div>
+        <div class="mt-3 mb-3" id="hourRow" style="display:none">
+            <div class="modal-label">Time of Day</div>
+            <select class="modal-select" id="schedHour">
+                <option value="0">12:00 AM</option><option value="1">1:00 AM</option>
+                <option value="2" selected>2:00 AM</option><option value="3">3:00 AM</option>
+                <option value="6">6:00 AM</option><option value="7">7:00 AM</option>
+                <option value="8">8:00 AM</option><option value="12">12:00 PM</option>
+                <option value="18">6:00 PM</option><option value="20">8:00 PM</option>
+                <option value="22">10:00 PM</option>
+            </select>
+        </div>
+        <div class="toggle-row">
+            <div><strong style="font-size:.85rem">Google Drive Auto-Sync</strong><div style="font-size:.75rem;color:var(--muted)">Upload to Drive after each sync</div></div>
+            <label class="toggle"><input type="checkbox" id="driveAutoToggle"><span class="slider"></span></label>
+        </div>
+        <div style="font-size:.78rem;color:var(--muted);margin-top:12px" id="lastRunDisplay"></div>
+        <div class="d-flex gap-2 justify-content-end mt-4">
+            <button class="btn-sm-act" onclick="document.getElementById('scheduleModal').classList.remove('open')">Cancel</button>
+            <button class="btn-sm-act primary" onclick="saveSchedule()"><i class="bi bi-check-lg me-1"></i>Save</button>
+        </div>
+    </div>
 </div>
 
-<script
-        src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js">
-</script>
+<div class="toast-custom" id="toast"></div>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"></script>
 <script>
-
-    //  State
-    let dashData      = null;   // dashboard summary from API
-    let driveStatus   = {
-        configured: false, authorized: false
+    // State
+    let dashData={
+    },driveStatus={
+        configured:false,authorized:false
+    },saveTarget={
+    },saveOpt='device',schedMode='manual';
+    const CS={
     };
-    // courseState[courseId] = { open, filesLoaded, weeksLoaded, activeWeek, files, weeks }
-    const courseState = {};
 
-    //  Bootstrap
-    document.addEventListener('DOMContentLoaded', async () => {
-        try {
-            const r = await fetch('/api/auth/status');
-            const d = await r.json();
-            if (!d.loggedIn) {
-                window.location.href = '/index.html'; return;
-            }
-        } catch {
-            window.location.href = '/index.html'; return;
+    // Boot
+    document.addEventListener('DOMContentLoaded',async()=>{
+        try{
+            const r=await fetch('/api/auth/status');if(!(await r.json()).loggedIn){window.location.href='/index.html';return;
         }
-
-        // Load drive status and dashboard in parallel
-        const [, dash] = await Promise.all([loadDriveStatus(), fetchDashboard()]);
-        if (dash) renderPage(dash);
+        }catch{
+            window.location.href='/index.html';return;
+        }
+        await Promise.all([initDrive(),initChanges()]);
+        const d=await fetchDash();if(d)renderPage(d);
     });
-
-    async function fetchDashboard() {
-        try {
-            const r = await fetch('/api/dashboard/summary');
-            if (r.status === 401) {
-                window.location.href = '/index.html'; return null;
-            }
-            if (!r.ok) {
-                const e = await r.json(); showError(e.error || 'Failed to load.'); return null;
-            }
-            dashData = await r.json();
-            return dashData;
-        } catch (e) {
-            showError('Connection error: ' + e.message); return null;
+    async function fetchDash(){
+        try{
+            const r=await fetch('/api/dashboard/summary');if(r.status===401){
+                window.location.href='/index.html';return null;
+            }if(!r.ok){
+                showErr((await r.json()).error||'Failed');return null;
+            }dashData=await r.json();return dashData;
+        }catch(e){showErr(e.message);return null;
         }
     }
+    async function initDrive(){
+        try{
+            const r=await fetch('/api/drive/status');if(r.ok)driveStatus=await r.json();
+        }catch{
 
-    async function loadDriveStatus() {
-        try {
-            const r = await fetch('/api/drive/status');
-            if (r.ok) driveStatus = await r.json();
-        } catch {
-            /* Drive is optional */
         }
     }
+    async function initChanges(){try{const r=await fetch('/api/changes/status');if(!r.ok)return;const s=await r.json();if(!s.hasSnapshot){await fetch('/api/changes/snapshot',{method:'POST'});}else{sessionStorage.setItem('lastChecked',s.lastChecked);}}catch{}}
 
-    //  Main Render
-    function renderPage(data) {
-        document.getElementById('navUserName').textContent  = data.fullName;
-        document.getElementById('avatarLetter').textContent = data.fullName.charAt(0).toUpperCase();
-
-        const firstName   = data.fullName.split(' ')[0];
-        const urgentCount = data.urgentCount;
-        const eventCount  = data.upcomingEvents.length;
-        const quizCount   = data.upcomingEvents.filter(e => e.eventType === 'quiz').length;
-        const courseCount = data.courses.length;
-
-        document.getElementById('pageContent').innerHTML = `
-        <div
-         class="mb-3 d-flex align-items-center justify-content-between flex-wrap gap-2">
-            <div>
-                <h1
-                 style="font-size:1.45rem;font-weight:800;margin:0">Good day,${
-            safe(firstName)
-        } 👋
-                 </h1>
-                <p
-                 style="font-size:0.88rem;color:var(--muted);margin:4px 0 0">Here's your academic overview.
-                 </p>
-            </div>
+    // Render Page
+    function renderPage(data){
+        document.getElementById('navUserName').textContent=data.fullName;
+        document.getElementById('avatarLetter').textContent=data.fullName.charAt(0).toUpperCase();
+        const fn=data.fullName.split(' ')[0],uc=data.urgentCount,ec=data.upcomingEvents.length,qc=data.upcomingEvents.filter(e=>e.eventType==='quiz').length;
+        const sorted=[...data.courses].sort((a,b)=>{
+            if(a.favorite&&!b.favorite)return -1;if(!a.favorite&&b.favorite)return 1;return a.fullName.localeCompare(b.fullName);
+        });
+        const lc=sessionStorage.getItem('lastChecked');
+        document.getElementById('pageContent').innerHTML=`
+    <div class="mb-3 d-flex align-items-center justify-content-between flex-wrap gap-2">
+        <div><h1 style="font-size:1.45rem;font-weight:800;margin:0">Good day, ${
+            safe(fn)
+        } 👋</h1><p style="font-size:.88rem;color:var(--muted);margin:4px 0 0">Your academic overview.</p></div>
+        <div class="d-flex gap-2 flex-wrap">
+            <button class="btn-sm-act" onclick="openScheduleModal()"><i class="bi bi-clock me-1"></i>Auto-Sync</button>
+            <button class="btn-sm-act primary" id="syncBtn" onclick="syncNow()"><i class="bi bi-arrow-repeat me-1"></i>Sync Now</button>
         </div>
-${
-            urgentCount > 0 ? `
-        <div
-         class="urgent-banner mb-3">
-            <i class="bi bi-exclamation-triangle-fill fs-5"></i>
-            <span>
-            You have <strong>${
-                urgentCount
-            }
-</strong>
- deadline${
-                urgentCount > 1 ? 's' : ''
-            } due within 3 days.
-            </span>
-            <a
-             href="/calendar.html" class="ms-auto text-decoration-underline" style="color:inherit;white-space:nowrap">View Calendar →
-             </a>
-        </div>` : ''
+    </div>
+    ${
+            uc>0?`<div class="urgent-banner mb-3"><i class="bi bi-exclamation-triangle-fill fs-5"></i><span>You have <strong>${
+                uc
+            }</strong> deadline${
+        uc>1?'s':''
+    } due within 3 days.</span><a href="/calendar.html" class="ms-auto text-decoration-underline" style="color:inherit;white-space:nowrap">View →</a></div>`:''
         }
-
-        <!-- Drive Banner -->
-        <div
-         id="driveBanner" class="drive-banner mb-4">
-${
-            driveBannerHTML()
-        }
-</div>
-
-        <!-- Stats -->
-        <div
-         class="row g-3 mb-4">
-            <div
-             class="col-6 col-md-3">
-             <div class="stat-card">
-                <div
-                 class="stat-label">Enrolled Courses
-                 </div>
-                <div
-                 class="stat-value val-blue">${
-            courseCount
-        }
-                 </div>
-                <div
-                 class="stat-sub">${
-            safe(data.siteName)
-        }
-                </div>
-            </div></div>
-            <div
-             class="col-6 col-md-3">
-             <div
-              class="stat-card">
-                <div
-                 class="stat-label">Urgent Deadlines
-                 </div>
-                <div
-                 class="stat-value val-red">${
-            urgentCount
+    <div id="changesBar" class="mb-3">${
+            lc?`<div class="changes-bar"><i class="bi bi-broadcast" style="color:var(--yellow)"></i><span style="flex:1;font-size:.83rem">Last LMS check: <strong>${
+                safe(lc)
+            }</strong></span><button class="btn-sm-act" style="padding:4px 11px;font-size:.76rem" onclick="runChangeCheck()"><i class="bi bi-search me-1"></i>Check for New Files</button></div>`:'&nbsp;'
         }</div>
-                <div
-                 class="stat-sub">Due within 3 days
-                 </div>
-            </div></div>
-            <div
-             class="col-6 col-md-3">
-             <div
-              class="stat-card">
-                <div
-                 class="stat-label">Upcoming Events
-                 </div>
-                <div
-                 class="stat-value val-green">${
-            eventCount
-        }
-                 </div>
-                <div
-                 class="stat-sub">Next 14 days
-                 </div>
-            </div></div>
-            <div
-             class="col-6 col-md-3">
-             <div
-              class="stat-card">
-                <div
-                 class="stat-label">Quizzes Ahead
-                 </div>
-                <div
-                 class="stat-value val-purple">${
-            quizCount
-        }
-                 </div>
-                <div
-                 class="stat-sub">Next 14 days
-                 </div>
-            </div></div>
-        </div>
-
-        <!-- Quick Actions -->
-        <div
-         class="quick-actions">
-            <a
-             href="/calendar.html"   class="action-btn">📅 Calendar
-             </a>
-            <a
-             href="/summarizer.html" class="action-btn">🤖 Summarizer
-             </a>
-            <button
-             class="action-btn" onclick="downloadAllCourses()">⬇️ Download All Courses
-             </button>
-            <button
-             class="action-btn" onclick="renderPage(dashData)">🔄 Refresh
-             </button>
-        </div>
-
-        <!-- Two-column layout -->
-        <div
-         class="row g-4">
-            <!-- Courses (left, wider) -->
-            <div
-             class="col-12 col-lg-7">
-                <div
-                 class="section-card">
-                    <div
-                     class="section-head">
-                        <h2>
-                        <i class="bi bi-journals me-2"></i>
-                        Enrolled Courses
-                        </h2>
-                        <span
-                         class="head-badge" id="courseCountBadge">${
-            courseCount
-        } courses
-                         </span>
-                    </div>
-                    <div
-                     id="courseList">
-                        ${
-            data.courses.length === 0
-            ? '<div' +
-                ' class="empty-msg">No enrolled courses found.' +
-                '</div>'
-            : data.courses.map(c => buildCourseRow(c)).join('')
-        }
-                    </div>
-                </div>
+    <div id="driveBanner" class="drive-banner mb-4">${
+            driveBannerHTML()
+        }</div>
+    <div class="row g-3 mb-4">
+        <div class="col-6 col-md-3"><div class="stat-card"><div class="stat-label">Enrolled Courses</div><div class="stat-value val-blue">${
+            data.courses.length
+        }</div><div class="stat-sub">${
+            safe(data.siteName)
+        }</div></div></div>
+        <div class="col-6 col-md-3"><div class="stat-card"><div class="stat-label">Urgent Deadlines</div><div class="stat-value val-red">${
+            uc
+        }</div><div class="stat-sub">Due within 3 days</div></div></div>
+        <div class="col-6 col-md-3"><div class="stat-card"><div class="stat-label">Upcoming Events</div><div class="stat-value val-green">${
+            ec
+        }</div><div class="stat-sub">Next 14 days</div></div></div>
+        <div class="col-6 col-md-3"><div class="stat-card"><div class="stat-label">Quizzes Ahead</div><div class="stat-value val-purple">${
+            qc
+        }</div><div class="stat-sub">Next 14 days</div></div></div>
+    </div>
+    <div class="quick-actions">
+        <a href="/calendar.html" class="action-btn">📅 Calendar</a>
+        <a href="/files.html" class="action-btn">📂 File Manager</a>
+        <a href="/summarizer.html" class="action-btn">🤖 Summarizer</a>
+        <button class="action-btn" onclick="dlAll()">⬇️ Download All Courses</button>
+    </div>
+    <div class="row g-4">
+        <div class="col-12 col-lg-7">
+            <div class="section-card">
+                <div class="section-head"><h2><i class="bi bi-journals me-2"></i>Enrolled Courses</h2><span class="head-badge">${
+            data.courses.length
+        } courses</span></div>
+                <div id="courseList">${
+            sorted.length?sorted.map(c=>buildCRow(c)).join(''):'<div class="empty-msg">No enrolled courses found.</div>'
+        }</div>
             </div>
-
-            <!-- Deadlines (right) -->
-            <div
-             class="col-12 col-lg-5">
-                <div
-                 class="section-card">
-                    <div
-                     class="section-head">
-                        <h2>
-                        <i class="bi bi-alarm me-2"></i>Upcoming Deadlines
-                        </h2>
-                        <a
-                         href="/calendar.html" style="font-size:0.78rem;color:var(--accent);text-decoration:none">View all →
-                         </a>
-                    </div>
-                    ${
-            data.upcomingEvents.length === 0
-            ? '<div' +
-                ' class="empty-msg">No deadlines in the next 14 days 🎉' +
-                '</div>'
-            : data.upcomingEvents.map(e => {
-                const days = Math.ceil(e.timeUntilDue / 86400);
-                const label = days <= 0 ? 'Today' : days === 1 ? 'Tomorrow' : days + 'd';
-                return `<div
- class="deadline-item">
-                                <div
-                                 class="dl-dot" style="background:${
+        </div>
+        <div class="col-12 col-lg-5">
+            <div class="section-card">
+                <div class="section-head"><h2><i class="bi bi-alarm me-2"></i>Upcoming Deadlines</h2><a href="/calendar.html" style="font-size:.78rem;color:var(--accent);text-decoration:none">View all →</a></div>
+                ${
+            data.upcomingEvents.length?data.upcomingEvents.map(e=>{
+                const d=Math.ceil(e.timeUntilDue/86400);const l=d<=0?'Today':d===1?'Tomorrow':d+'d';return`<div class="deadline-item"><div class="dl-dot" style="background:${
                     e.color
-                }">
-</div>
-                                <div
-                                 style="flex:1;min-width:0">
-                                    <div
-                                     class="dl-title">${
+                }"></div><div style="flex:1;min-width:0"><div class="dl-title">${
                     safe(e.title)
-                }
-                                     </div>
-                                    <div
-                                     class="dl-course">${
+                }</div><div class="dl-course">${
                     safe(e.courseName)
-                }
-                                     </div>
-                                </div>
-                                <span
-                                 class="dl-when" style="background:${
+                }</div></div><span class="dl-when" style="background:${
                     e.color
                 }">${
-                    label
-                }
-                                 </span>
-                            </div>`;
-            }
-            ).join('')
+                    l
+                }</span></div>`;
+            }).join(''):'<div class="empty-msg">No deadlines in 14 days 🎉</div>'
         }
-                </div>
             </div>
-        </div>`;
+        </div>
+    </div>`;
     }
 
-    //  Course Row Builder
-    function buildCourseRow(c) {
-        if (!courseState[c.id]) {
-            courseState[c.id] = {
-                open: false, filesLoaded: false, weeksLoaded: false, activeWeek: 0, files: [], weeks: []
-            };
-        }
-        return `
-    <div
-     class="course-row" id="cr-${
+    // Course Row
+    function buildCRow(c){
+        if(!CS[c.id])CS[c.id]={
+            open:false,loaded:false,activeWeek:-1,weeks:[],files:[],filter:'all'
+        };
+        const nb=c.newFilesCount>0?`<span class="new-badge">🔴 ${
+            c.newFilesCount
+        } new</span>`:'';
+        const ins=c.instructorName?`<span><i class="bi bi-person-fill"></i> ${
+            safe(c.instructorName)
+        }</span>`:'';
+        const la=c.lastAccess>0?`<span><i class="bi bi-clock"></i> ${
+            timeAgo(c.lastAccess)
+        }</span>`:'';
+        return`<div class="course-row${c.favorite?' is-fav':''}" id="cr-${
             c.id
         }">
-        <div
-         class="course-header" onclick="toggleCourse(${
+    <div class="course-header" onclick="togCourse(${
             c.id
-        }, '${
+        },'${
             safe(c.shortName)
         }')">
-            <i class="bi bi-chevron-right course-chevron" id="chev-${
+        <i class="bi bi-chevron-right course-chevron" id="chev-${
             c.id
         }"></i>
-            <div
-             style="flex:1;min-width:0">
-                <div
-                 class="course-name">${
+        <div style="flex:1;min-width:0"><div class="course-name">${
             safe(c.fullName)
+        }</div><div class="course-meta">${
+            ins
+        }${
+            la
+        }</div></div>
+        ${
+            nb
         }
-                 </div>
-                <div
-                 class="course-code">${
+        <button class="btn-star ${
+            c.favorite?'starred':'unstarred'
+        }" id="star-${
+            c.id
+        }" onclick="event.stopPropagation();togFav(${
+            c.id
+        },this)" title="${
+            c.favorite?'Unpin':'Pin to top'
+        }">${
+            c.favorite?'⭐':'☆'
+        }</button>
+        <div class="course-actions" onclick="event.stopPropagation()">
+            <button class="btn-sm-act primary" id="dlbtn-${
+            c.id
+        }" onclick="openSaveMod(${
+            c.id
+        },'${
             safe(c.shortName)
-        }
-                 </div>
-            </div>
-            <div
-             class="course-actions" onclick="event.stopPropagation()">
-                <button
-                 class="btn-sm-action primary" id="dlbtn-${
-            c.id
-        }"
-                        onclick="downloadCourse(${
-            c.id
-        }, '${
-            safe(c.shortName)
-        }')">
-                    <i class="bi bi-download"></i> Download
-                </button>
-                ${
-            driveStatus.authorized ? `
-                <button class="btn-sm-action drive" id="drivebtn-${
-                c.id
-            }"
-                        onclick="uploadToDrive('${
-                safe(c.shortName)
-            }', ${
-                c.id
-            })">
-                    <i class="bi bi-cloud-upload"></i> Drive
-                </button>` : ''
-        }
-            </div>
-        </div>
-        <div
-         class="course-panel" id="panel-${
-            c.id
-        }">
-</div>
-    </div>`;
-    }
-
-    //  Toggle / Expand Course
-    async function toggleCourse(courseId, shortName) {
-        const state  = courseState[courseId];
-        const panel  = document.getElementById('panel-' + courseId);
-        const chev   = document.getElementById('chev-' + courseId);
-
-        state.open = !state.open;
-        panel.classList.toggle('open', state.open);
-        chev.classList.toggle('open', state.open);
-
-        if (!state.open) return;
-
-        // Load files + weeks on first open
-        if (!state.weeksLoaded) {
-            panel.innerHTML = '' +
-                '<div' +
-                ' class="loading-row">' +
-                '<span' +
-                ' class="spinner-sm me-2">' +
-                '</span>' +
-                'Loading course contents...' +
-                '</div>';
-            await loadCourseContents(courseId, shortName);
-        }
-    }
-
-    async function loadCourseContents(courseId, shortName) {
-        const state = courseState[courseId];
-
-        try {
-            // Fetch weekly sections and flat file list in parallel
-            const [weeksRes, filesRes] = await Promise.all([
-                fetch(`/api/courses/${
-                    courseId
-                }/weeks?shortName=${
-                    encodeURIComponent(shortName)
-                }`),
-                fetch(`/api/courses/${
-                    courseId
-                }/files`)
-            ]);
-
-            state.weeks = weeksRes.ok ? await weeksRes.json() : [];
-            state.files = filesRes.ok ? await filesRes.json() : [];
-            state.weeksLoaded = true;
-            state.filesLoaded = true;
-
-        } catch (e) {
-            document.getElementById('panel-' + courseId).innerHTML =
-                `<div
- class="empty-msg" style="color:var(--red)">Failed to load: ${
-                safe(e.message)
-            }
- </div>`;
-            return;
-        }
-
-        renderCoursePanel(courseId, shortName);
-    }
-
-
-    //  Render Course Panel (tabs + file list)
-    function renderCoursePanel(courseId, shortName) {
-        const state = courseState[courseId];
-        const panel = document.getElementById('panel-' + courseId);
-
-        if (state.weeks.length === 0 && state.files.length === 0) {
-            panel.innerHTML = '<div' +
-                ' class="empty-msg">No downloadable files found in this course.' +
-                '</div>';
-            return;
-        }
-
-        // Build "All Files" + per-week tabs
-        let tabsHTML = `<div
- class="week-tab active" onclick="switchTab(${
-            courseId
-        },'${
-            safe(shortName)
-        }' +
-  '',-1,this)"
-                         id="tab-${
-            courseId
-        }-all">All Files (${
-            state.files.length
-        })
-                         </div>`;
-
-        state.weeks.forEach((w, i) => {
-            const hasFiles = w.files && w.files.length > 0;
-            tabsHTML += `<div
- class="week-tab${
-                hasFiles ? ' has-files' : ''
-            }"
-                          onclick="switchTab(${
-                courseId
-            },'${
-                safe(shortName)
-            }',${
-                i
-            },this)"
-                          id="tab-${
-                courseId
-            }-${
-                i
-            }">
-                        ${
-                safe(w.sectionName || w.dateRange || 'Week ' + w.sectionNumber)
-            }
-                     </div>`;
-        });
-
-        const dlAllLabel = state.files.length > 0
-            ? `<i class="bi bi-download me-1"></i>Download All (${
-            state.files.length
-        } files)`
-            : `<i class="bi bi-download me-1"></i>Download All`;
-
-        panel.innerHTML = `
-        <div
-         class="panel-toolbar">
-            <div
-             class="toolbar-left">
-                <button
-                 class="btn-sm-action primary" id="dlall-${
-            courseId
-        }"
-                        onclick="downloadCourse(${
-            courseId
-        },'${
-            safe(shortName)
-        }')">
-                    ${
-            dlAllLabel
-        }
-                </button>
-                <button
-                 class="btn-sm-action" id="dlweek-${
-            courseId
-        }" style="display:none"
-                        onclick="downloadActiveWeek(${
-            courseId
-        },'${
-            safe(shortName)
-        }')">
-                    <i class="bi bi-download me-1"></i>Download This Week
-                </button>
-                ${
-            driveStatus.authorized ? `
-                <button
-                 class="btn-sm-action drive"
-                        onclick="uploadToDrive('${
-                safe(shortName)
-            }', ${
-                courseId
-            })">
-                    <i class="bi bi-cloud-upload me-1"></i>Upload to Drive
-                </button>` : ''}
-            </div>
-            <span style="font-size:0.75rem;color:var(--muted)" id="file-count-${
-            courseId
-        }">
-                ${
-            state.files.length
-        } file(s)
-            </span>
-        </div>
-        <div
-         class="week-tabs">${
-            tabsHTML
-        }</div>
-        <div
-         class="file-list" id="filelist-${
-            courseId
-        }">
+        }','course')"><i class="bi bi-download"></i> Download</button>
             ${
-            renderFileItems(state.files)
+            driveStatus.authorized?`<button class="btn-sm-act drive" id="drivebtn-${
+                c.id
+            }" onclick="upDrive('${
+                safe(c.shortName)
+            }',${c.id
+            })"><i class="bi bi-cloud-upload"></i></button>`:''
         }
-        </div>`;
+        </div>
+    </div>
+    <div class="course-panel" id="panel-${
+            c.id
+        }"></div>
+</div>`;
     }
 
-    //  Tab Switching
-    function switchTab(courseId, shortName, weekIndex, tabEl) {
-        const state = courseState[courseId];
-
-        // Deactivate all tabs
-        const container = tabEl.closest('.week-tabs');
-        container.querySelectorAll('.week-tab').forEach(t => t.classList.remove('active'));
-        tabEl.classList.add('active');
-
-        state.activeWeek = weekIndex;
-
-        const weekBtn = document.getElementById('dlweek-' + courseId);
-
-        if (weekIndex === -1) {
-            // "All Files" tab
-            document.getElementById('filelist-' + courseId).innerHTML = renderFileItems(state.files);
-            document.getElementById('file-count-' + courseId).textContent = state.files.length + ' file(s)';
-            if (weekBtn) weekBtn.style.display = 'none';
-        } else {
-            const week = state.weeks[weekIndex];
-            const files = week.files || [];
-            document.getElementById('filelist-' + courseId).innerHTML = renderFileItems(files);
-            document.getElementById('file-count-' + courseId).textContent = files.length + ' file(s) in this week';
-            if (weekBtn) {
-                weekBtn.style.display = files.length > 0 ? 'inline-flex' : 'none';
-            }
-        }
+    // Favorites
+    async function togFav(id,btn){
+        const isFav=btn.classList.contains('starred');
+        await fetch(`/api/favorites/${
+            id
+        }`,{
+            method:isFav?'DELETE':'POST'
+        });
+        btn.classList.toggle('starred',!isFav);btn.classList.toggle('unstarred',isFav);
+        btn.textContent=isFav?'☆':'⭐';
+        document.getElementById('cr-'+id)?.classList.toggle('is-fav',!isFav);
+        showToast(isFav?'Course unpinned.':'Course pinned ⭐');
     }
 
-    //  File Item Renderer
-    function renderFileItems(files) {
-        if (!files || files.length === 0)
-            return '<div' +
-                ' class="empty-msg" style="padding:16px">No files in this section.' +
-                '</div>';
-
-        return files.map(f => {
-            const ext  = (f.fileName || '').split('.').pop().toLowerCase();
-            const icon = fileIcon(ext);
-            const size = formatBytes(f.fileSize || 0);
-            return `
-        <div
-         class="file-item">
-            <div
-             class="file-icon ${
-                icon.cls
+    // Toggle Course
+    async function togCourse(id,sn){
+        const s=CS[id],p=document.getElementById('panel-'+id),ch=document.getElementById('chev-'+id);
+        s.open=!s.open;p.classList.toggle('open',s.open);ch.classList.toggle('open',s.open);
+        if(!s.open)return;
+        if(!s.loaded){
+            p.innerHTML='<div class="loading-row"><span class="spinner-sm me-2"></span>Loading...</div>';await loadCourse(id,sn);
+        }
+    }
+    async function loadCourse(id,sn){
+        const s=CS[id];
+        try{
+            const[wR,fR]=await Promise.all([fetch(`/api/courses/${
+                id
+            }/weeks?shortName=${
+                encodeURIComponent(sn)
+            }`),fetch(`/api/courses/${
+                id
+            }/files`)]);
+            s.weeks=wR.ok?await wR.json():[];s.files=fR.ok?await fR.json():[];s.loaded=true;
+        }catch(e){
+            document.getElementById('panel-'+id).innerHTML=`<div class="empty-msg" style="color:var(--red)">Failed: ${safe(e.message)}</div>`;return;
+        }
+        renderPanel(id,sn);
+    }
+    function renderPanel(id,sn){
+        const s=CS[id],p=document.getElementById('panel-'+id);
+        if(!s.weeks.length&&!s.files.length){
+            p.innerHTML='<div class="empty-msg">No downloadable files found.</div>';return;
+        }
+        let tabs=`<div class="week-tab active" onclick="swTab(${
+            id
+        },'${
+            safe(sn)
+        }',-1,this)">All (${
+            s.files.length
+        })</div>`;
+        s.weeks.forEach((w,i)=>{
+            const hf=w.files&&w.files.length>0;tabs+=`<div class="week-tab${
+            hf?' has-files':''
+        }" onclick="swTab(${
+            id
+        },'${
+            safe(sn)
+        }',${
+            i
+        },this)">${
+            safe(w.sectionName||w.dateRange||'Week '+w.sectionNumber)
+        }</div>`;
+        });
+        p.innerHTML=`
+    <div class="panel-toolbar">
+        <div class="toolbar-left">
+            <button class="btn-sm-act primary" id="dlall-${
+            id
+        }" onclick="openSaveMod(${
+            id
+        },'${
+            safe(sn)
+        }','all')"><i class="bi bi-download me-1"></i>Download All</button>
+            <button class="btn-sm-act" id="dlweek-${
+            id
+        }" style="display:none" onclick="openSaveMod(${
+            id
+        },'${
+            safe(sn)
+        }','week')"><i class="bi bi-download me-1"></i>This Week</button>
+            <button class="btn-sm-act" onclick="dlLatest(${
+            id
+        },'${
+            safe(sn)
+        }')"><i class="bi bi-stars me-1"></i>Latest Only</button>
+            ${
+            driveStatus.authorized?`<button class="btn-sm-act drive" onclick="upDrive('${
+                safe(sn)
+            }',${
+                id
+            })"><i class="bi bi-cloud-upload me-1"></i>Drive</button>`:''
+        }
+        </div>
+        <div class="d-flex gap-1 flex-wrap">
+            <span class="type-chip active" onclick="setFilter(${
+            id
+        },this,'all')">All</span>
+            <span class="type-chip" onclick="setFilter(${
+            id
+        },this,'pdf')">PDF</span>
+            <span class="type-chip" onclick="setFilter(${
+            id
+        },this,'pptx')">Slides</span>
+            <span class="type-chip" onclick="setFilter(${
+            id
+        },this,'video')">Video</span>
+            <span class="type-chip" onclick="setFilter(${
+            id
+        },this,'docx')">Docs</span>
+            <span class="type-chip" onclick="setFilter(${
+            id
+        },this,'zip')">ZIP</span>
+        </div>
+    </div>
+    <div id="selbar-${
+            id
+        }" style="display:none;padding:8px 16px;font-size:.78rem;color:var(--accent);background:rgba(79,142,247,.06);border-bottom:1px solid var(--border)">
+        <span id="selcnt-${
+            id
+        }">0</span> selected — <button class="btn-sm-act primary" style="padding:3px 10px;font-size:.74rem" onclick="dlSel(${
+            id
+        },'${
+            safe(sn)
+        }')">Download Selected</button>
+        <button class="btn-sm-act" style="padding:3px 10px;font-size:.74rem;margin-left:4px" onclick="clrSel(${
+            id
+        })">Clear</button>
+    </div>
+    <div class="week-tabs">${
+            tabs
+        }</div>
+    <div class="file-list" id="fl-${
+            id
+        }">${
+            renderFiles(s.files,id)
+        }</div>`;
+    }
+    function swTab(id,sn,wi,el){
+        const s=CS[id];el.closest('.week-tabs').querySelectorAll('.week-tab').forEach(t=>t.classList.remove('active'));el.classList.add('active');s.activeWeek=wi;
+        const files=wi===-1?s.files:(s.weeks[wi]?s.weeks[wi].files||[]:[]);
+        document.getElementById('fl-'+id).innerHTML=renderFiles(filtFiles(files,s.filter),id);
+        const wb=document.getElementById('dlweek-'+id);if(wb)wb.style.display=wi>=0&&files.length?'inline-flex':'none';
+    }
+    function setFilter(id,chip,f){
+        const s=CS[id];s.filter=f;chip.closest('.panel-toolbar').querySelectorAll('.type-chip').forEach(c=>c.classList.remove('active'));chip.classList.add('active');
+        const files=s.activeWeek===-1?s.files:(s.weeks[s.activeWeek]?s.weeks[s.activeWeek].files||[]:[]);
+        document.getElementById('fl-'+id).innerHTML=renderFiles(filtFiles(files,f),id);
+    }
+    function filtFiles(files,f){
+        if(!f||f==='all')return files;
+        const ext={
+            pdf:['pdf'],pptx:['pptx','ppt'],video:['mp4','mkv','avi','mov'],docx:['docx','doc'],zip:['zip','rar','7z']
+        };
+        const a=ext[f]||[];return files.filter(f=>{
+            const e=(f.fileName||'').split('.').pop().toLowerCase();return a.includes(e);
+        });
+    }
+    function renderFiles(files,id){
+        if(!files||!files.length)return'<div class="empty-msg" style="padding:14px">No files in this view.</div>';
+        return files.map(f=>{const ext=(f.fileName||'').split('.').pop().toLowerCase();const ic=fIcon(ext);
+            return`<div class="file-item"><input type="checkbox" class="file-checkbox" onchange="onCbk(${
+                id
+            })"><div class="file-icon-sm ${
+                ic.cls
             }">${
-                icon.emoji
-            }
-             </div>
-            <span
-             class="file-name" title="${
+                ic.em
+            }</div><span class="file-name" title="${
                 safe(f.fileName)
-            }">${
-                safe(f.fileName)
-            }
-             </span>
-            <span
-             class="file-size">${
-                size
-            }
-             </span>
-        </div>`;
+            }">${safe(f.fileName)
+            }</span><span class="file-size">${
+                fmtBytes(f.fileSize||0)
+            }</span></div>`;
         }).join('');
     }
-
-    //  Download — Full Course
-    async function downloadCourse(courseId, shortName) {
-        const btn = document.getElementById('dlbtn-' + courseId)
-            || document.getElementById('dlall-' + courseId);
-
-        if (btn) {
-            btn.disabled = true; btn.innerHTML = '' +
-                '<span' +
-                ' class="spinner-sm me-1">' +
-                '</span>Downloading...';
-        }
-
-        try {
-            const r = await fetch(`/api/download/${
-                courseId
-            }`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({
-                    shortName
-                })
-            });
-            const d = await r.json();
-
-            if (r.ok) {
-                if (btn) {
-                    btn.innerHTML = `<i class="bi bi-check-lg me-1"></i>Done (${
-                        d.downloaded
-                    })`; btn.classList.add('success');
-                }
-                showToast(`Downloaded ${
-                    d.downloaded
-                } file(s) from ${
-                    shortName
-                }.` + (d.skipped > 0 ? ` ${
-                    d.skipped
-                } already existed.` : ''));
-            } else {
-                if (btn) {
-                    btn.disabled = false; btn.innerHTML = '<i class="bi bi-download me-1"></i>Retry';
-                }
-                showToast('Download failed: ' + (d.error || 'unknown error'), true);
-            }
-        } catch (e) {
-            if (btn) {
-                btn.disabled = false; btn.innerHTML = '<i class="bi bi-download me-1"></i>Retry';
-            }
-            showToast('Connection error: ' + e.message, true);
-        }
+    function onCbk(id){
+        const n=document.querySelectorAll(`#fl-${
+            id
+        } .file-checkbox:checked`).length;const sb=document.getElementById('selbar-'+id);const sc=document.getElementById('selcnt-'+id);if(sb)sb.style.display=n>0?'block':'none';if(sc)sc.textContent=n;
+    }
+    function clrSel(id){
+        document.querySelectorAll(`#fl-${
+        id
+    } .file-checkbox`).forEach(c=>c.checked=false);onCbk(id);
+    }
+    async function dlSel(id,sn){
+        const n=document.querySelectorAll(`#fl-${
+            id
+        } .file-checkbox:checked`).length;if(!n){
+            showToast('No files selected.',true);return;
+        }showToast(`Smart syncing ${
+            n
+        } files (unchanged files will be skipped)...`);await doCourse(id,sn);clrSel(id);
     }
 
-    //  Download — Active Week Only
-    async function downloadActiveWeek(courseId, shortName) {
-        const state = courseState[courseId];
-        if (state.activeWeek < 0 || !state.weeks[state.activeWeek]) return;
-
-        const week = state.weeks[state.activeWeek];
-        const btn  = document.getElementById('dlweek-' + courseId);
-
-        if (btn) {
-            btn.disabled = true; btn.innerHTML = '<span' +
-                ' class="spinner-sm me-1">' +
-                '</span>Downloading...';
-        }
-
-        try {
-            const r = await fetch(`/api/courses/${
-                courseId
-            }/weeks/download`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({
-                    shortName, sectionNumbers: [week.sectionNumber]
-                })
-            });
-            const d = await r.json();
-
-            if (r.ok) {
-                if (btn) {
-                    btn.innerHTML = `<i class="bi bi-check-lg me-1"></i>Done (${
-                        d.downloaded
-                    })`; btn.classList.add('success');
-                }
-                showToast(`Week downloaded: ${
-                    d.downloaded
-                } file(s). ${
-                    d.skipped
-                } skipped.`);
-            } else {
-                if (btn) {
-                    btn.disabled = false; btn.innerHTML = '<i class="bi bi-download me-1"></i>Download This Week';
-                }
-                showToast(d.error || 'Week download failed.', true);
-            }
-        } catch (e) {
-            if (btn) {
-                btn.disabled = false; btn.innerHTML = '<i class="bi bi-download me-1"></i>Download This Week';
-            }
-            showToast(e.message, true);
-        }
-    }
-
-    //  Download All Courses
-    async function downloadAllCourses() {
-        if (!dashData || !dashData.courses.length) return;
-        showToast('Starting download for all ' + dashData.courses.length + ' courses...');
-        for (const c of dashData.courses) {
-            await downloadCourse(c.id, c.shortName);
-        }
-        showToast('All course downloads finished!');
-    }
-
-    //  Google Drive
-    function driveBannerHTML() {
-        if (!driveStatus.configured) {
-            return `<div
- class="drive-dot unconfigured">
-</div>
-                <div
-                 style="flex:1">
-                    <span
-                     style="font-weight:600;font-size:0.88rem">Google Drive not configured
-                     </span>
-                    <div
-                     style="font-size:0.78rem;color:var(--muted);margin-top:2px">
-                        Add <code>
-                        credentials.json
-                        </code> to <code>
-                        src/main/resources/
-                        </code> to enable cloud backup.
-                    </div>
-                </div>`;
-        }
-        if (!driveStatus.authorized) {
-            return `<div
- class="drive-dot disconnected">
-</div>
-                <div
-                 style="flex:1">
-                    <span
-                     style="font-weight:600;font-size:0.88rem">Google Drive not connected
-                     </span>
-                    <div
-                     style="font-size:0.78rem;color:var(--muted);margin-top:2px">Connect once to back up your downloads to Drive.
-                     </div>
-                </div>
-                <button
-                 class="btn-sm-action drive" onclick="connectDrive()">
-                    <i class="bi bi-google me-1"></i>Connect Drive
-                </button>`;
-        }
-        return `<div
- class="drive-dot connected">
-</div>
-            <div
-             style="flex:1">
-                <span
-                 style="font-weight:600;font-size:0.88rem;color:var(--green)">Google Drive connected
-                 </span>
-                <div
-                 style="font-size:0.78rem;color:var(--muted);margin-top:2px">Your downloads can be synced to Drive from each course panel.
-                 </div>
-            </div>
-            <button
-             class="btn-sm-action" style="color:var(--red);border-color:var(--red)" onclick="disconnectDrive()">
-                <i class="bi bi-x-circle me-1"></i>Disconnect
-            </button>`;
-    }
-
-    async function connectDrive() {
-        showToast('Opening Google sign-in... check your browser.');
-        try {
-            const r = await fetch('/api/drive/connect', {
-                method: 'POST'
-            });
-            const d = await r.json();
-            if (r.ok) {
-                driveStatus.authorized = true;
-                document.getElementById('driveBanner').innerHTML = driveBannerHTML();
-                showToast('Google Drive connected successfully!');
-                // Refresh to show Drive buttons on course rows
-                renderPage(dashData);
-            } else {
-                showToast(d.error || 'Failed to connect Drive.', true);
-            }
-        } catch (e) {
-            showToast('Connection error: ' + e.message, true);
-        }
-    }
-
-    async function disconnectDrive() {
-        try {
-            await fetch('/api/drive/disconnect', {
-                method: 'POST'
-            });
-            driveStatus.authorized = false;
-            document.getElementById('driveBanner').innerHTML = driveBannerHTML();
-            showToast('Google Drive disconnected.');
-            renderPage(dashData);
-        } catch (e) {
-            showToast(e.message, true);
-        }
-    }
-
-    async function uploadToDrive(shortName, courseId) {
-        const btn = document.getElementById('drivebtn-' + courseId);
-        if (btn) {
-            btn.disabled = true; btn.innerHTML = '<span' +
-                ' class="spinner-sm me-1">' +
-                '</span>Uploading...';
-        }
-
-        try {
-            const r = await fetch(`/api/drive/upload/${
-                encodeURIComponent(shortName)
-            }`, {
-                method: 'POST'
-            });
-            const d = await r.json();
-            if (r.ok) {
-                if (btn) {
-                    btn.innerHTML = `<i class="bi bi-cloud-check me-1"></i>Synced (${
-                        d.uploaded
-                    })`; btn.classList.add('success');
-                }
-                showToast(d.message || `Uploaded ${
-                    d.uploaded
-                } file(s) to Drive.`);
-            } else {
-                if (btn) {
-                    btn.disabled = false; btn.innerHTML = '<i class="bi bi-cloud-upload me-1"></i>Drive';
-                }
-                showToast(d.error || 'Drive upload failed.', true);
-            }
-        } catch (e) {
-            if (btn) {
-                btn.disabled = false; btn.innerHTML = '<i class="bi bi-cloud-upload me-1"></i>Drive';
-            }
-            showToast(e.message, true);
-        }
-    }
-
-    //  Utilities
-    function fileIcon(ext) {
-        const map = {
-            pdf:  {
-                cls: 'icon-pdf',  emoji: '📄'
-            },
-            pptx: {
-                cls: 'icon-pptx', emoji: '📊'
-            },
-            ppt:  {
-                cls: 'icon-pptx', emoji: '📊'
-            },
-            docx: {
-                cls: 'icon-docx', emoji: '📝'
-            },
-            doc:  {
-                cls: 'icon-docx', emoji: '📝'
-            },
-            zip:  {
-                cls: 'icon-zip',  emoji: '🗜'
-            },
-            rar:  {
-                cls: 'icon-zip',  emoji: '🗜'
-            },
-            mp4:  {
-                cls: 'icon-mp4',  emoji: '🎬'
-            },
-            xlsx: {
-                cls: 'icon-xlsx', emoji: '📈'
-            },
-            xls:  {
-                cls: 'icon-xlsx', emoji: '📈'
-            },
-        };
-        return map[ext] || {
-            cls: 'icon-file', emoji: '📎'
-        };
-    }
-
-    function formatBytes(b) {
-        if (!b || b === 0) return '—';
-        if (b < 1024)           return b + ' B';
-        if (b < 1024 * 1024)    return (b / 1024).toFixed(1) + ' KB';
-        return (b / (1024 * 1024)).toFixed(1) + ' MB';
-    }
-
-    function safe(s) {
-        if (!s) return '';
-        return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
-    }
-
-    function showError(msg) {
-        document.getElementById('pageContent').innerHTML = `
-    <div
-     class="center-screen">
-        <i class="bi bi-exclamation-circle" style="font-size:2rem;color:var(--red)"></i>
-        <p
-         style="color:var(--red)">${
-            safe(msg)
-        }
-         </p>
-        <button
-         class="btn-sm-action primary" onclick="location.reload()">Retry
-         </button>
-    </div>`;
-    }
-
-    let _toast;
-    function showToast(msg, isErr = false) {
-        const el = document.getElementById('toast');
-        el.textContent = msg;
-        el.style.borderColor = isErr ? 'var(--red)' : 'var(--border-color)';
-        el.classList.add('show');
-        clearTimeout(_toast);
-        _toast = setTimeout(() => el.classList.remove('show'), 3500);
-    }
-
-    async function logout() {
-        await fetch('/api/auth/logout', {
-            method: 'POST'
+    // Save Modal
+    function openSaveMod(id,sn,type){
+        saveTarget={
+            id,sn,type
+        };saveOpt='device';selectSaveOpt('device');
+        document.getElementById('saveModalLabel').textContent={course:`Download all files — ${sn}`,all:`Download all files — ${
+            sn
+        }`,week:`Download this week — ${
+            sn
+        }`
+        }[type]||sn;
+        ['opt-drive','opt-both'].forEach(k=>{const el=document.getElementById(k);if(el)el.style.display=driveStatus.authorized?'flex':'none';
         });
-        window.location.href = '/index.html';
+        document.getElementById('saveModal').classList.add('open');
+    }
+    function selectSaveOpt(o){
+        saveOpt=o;['device','drive','both'].forEach(k=>{const el=document.getElementById('opt-'+k);if(el){el.classList.toggle('selected',k===o);el.querySelector('input').checked=(k===o);
+        }
+        });
+    }
+    function closeSaveModal(){
+        document.getElementById('saveModal').classList.remove('open');
+    }
+    async function confirmSave(){
+        closeSaveModal();const{
+            id,sn,type
+        }=saveTarget;
+        if(type==='week')await dlWeek(id,sn);else await doCourse(id,sn);
+        if((saveOpt==='drive'||saveOpt==='both')&&driveStatus.authorized)await upDrive(sn,id);
+    }
+
+    // ── Download helpers ───────────────────────────────────────────────────────
+    async function doCourse(id,sn){
+        const btn=document.getElementById('dlbtn-'+id)||document.getElementById('dlall-'+id);
+        if(btn){
+            btn.disabled=true;btn.innerHTML='<span class="spinner-sm me-1"></span>Downloading...';
+        }
+        try{
+            const r=await fetch(`/api/download/${id}`,{
+                method:'POST',headers:{
+                    'Content-Type':'application/json'
+                },body:JSON.stringify({shortName:sn
+                })
+            });
+            const d=await r.json();
+            if(r.ok){
+                if(btn){
+                    btn.classList.add('success');btn.innerHTML=`<i class="bi bi-check-lg me-1"></i>Done (${
+                        d.downloaded
+                    })`;
+                }
+                const p=[];if(d.downloaded)p.push(`${
+                    d.downloaded
+                } new`);if(d.updated)p.push(`${
+                    d.updated
+                } updated`);if(d.skipped)p.push(`${
+                    d.skipped
+                } unchanged`);
+                showToast(`${
+                    sn
+                }: `+p.join(', ')+'.');
+            }else{
+                if(btn){
+                btn.disabled=false;btn.innerHTML='<i class="bi bi-download"></i> Download';
+                }showToast(d.error||'Download failed.',true);
+            }
+        }catch(e){
+            if(btn){
+            btn.disabled=false;btn.innerHTML='<i class="bi bi-download"></i> Download';
+        }showToast(e.message,true);
+        }
+    }
+    async function dlWeek(id,sn){
+        const s=CS[id];if(s.activeWeek<0||!s.weeks[s.activeWeek])return;
+        const w=s.weeks[s.activeWeek],btn=document.getElementById('dlweek-'+id);
+        if(btn){btn.disabled=true;btn.innerHTML='<span class="spinner-sm me-1"></span>...';}
+        try{
+            const r=await fetch(`/api/courses/${id}/weeks/download`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({shortName:sn,sectionNumbers:[w.sectionNumber]})});
+            const d=await r.json();
+            if(r.ok){if(btn){btn.classList.add('success');btn.innerHTML=`<i class="bi bi-check-lg me-1"></i>Done (${d.downloaded})`;}showToast(`Week: ${d.downloaded} new, ${d.skipped||0} unchanged.`);}
+            else{
+                if(btn){
+                btn.disabled=false;btn.innerHTML='<i class="bi bi-download me-1"></i>This Week';
+            }showToast(d.error||'Failed.',true);
+            }
+        }catch(e) {
+            if(btn){btn.disabled=false;btn.innerHTML='<i class="bi bi-download me-1"></i>This Week';
+        }showToast(e.message,true);
+        }
+    }
+    async function dlLatest(id,sn){
+        showToast(`Smart sync for ${
+            sn
+        }...`);await doCourse(id,sn);
+    }
+    async function dlAll(){
+        if(!dashData)return;showToast('Starting smart sync for all courses...');for(const c of dashData.courses)await doCourse(c.id,c.shortName);showToast('All courses synced!');
+    }
+
+    // Sync Now
+    async function syncNow(){
+        const btn=document.getElementById('syncBtn');if(btn){
+            btn.disabled=true;btn.innerHTML='<span class="spinner-sm me-1"></span>Syncing...';
+        }
+        try{
+            const r=await fetch('/api/scheduler/run-now',{
+                method:'POST'
+            });const d=await r.json();showToast(d.message||'Sync complete.');
+        }
+        catch(e){
+            showToast(e.message,true);
+        }
+        finally{
+            if(btn){
+            btn.disabled=false;btn.innerHTML='<i class="bi bi-arrow-repeat me-1"></i>Sync Now';
+        }
+        }
+    }
+
+    // Schedule Modal
+    async function openScheduleModal(){
+        try{const r=await fetch('/api/scheduler/config');if(r.ok){const c=await r.json();selectSched(c.mode||'manual');document.getElementById('schedHour').value=c.hourOfDay??2;document.getElementById('driveAutoToggle').checked=!!c.driveAutoSync;const lr=document.getElementById('lastRunDisplay');if(lr)lr.textContent=c.lastRunAt?`Last: ${
+            c.lastRunAt
+        } — ${
+            c.lastRunResult||''
+        }`:'';
+        }
+        }catch{
+
+        }document.getElementById('scheduleModal').classList.add('open');
+    }
+    function selectSched(m){
+        schedMode=m;['manual','daily','weekly'].forEach(k=>{
+            const el=document.getElementById('sched-'+k);if(el){
+                el.classList.toggle('selected',k===m);el.querySelector('input').checked=(k===m);
+            }
+        });const hr=document.getElementById('hourRow');if(hr)hr.style.display=m==='manual'?'none':'block';
+    }
+    async function saveSchedule(){
+        const cfg={mode:schedMode,hourOfDay:parseInt(document.getElementById('schedHour').value)||2,driveAutoSync:document.getElementById('driveAutoToggle').checked};
+        try{const r=await fetch('/api/scheduler/config',{
+            method:'POST',headers:{
+                'Content-Type':'application/json'
+            },body:JSON.stringify(cfg)
+        });const d=await r.json();document.getElementById('scheduleModal').classList.remove('open');showToast(r.ok?'Schedule saved.':(d.error||'Save failed.'),!r.ok);
+        }
+        catch(e){showToast(e.message,true);}
+    }
+
+    // Change Detection
+    async function runChangeCheck(){
+        const bar=document.getElementById('changesBar');if(bar)bar.innerHTML='<div class="changes-bar"><span class="spinner-sm me-2"></span>Scanning LMS for changes...</div>';
+        try{
+            const r=await fetch('/api/changes/check',{
+                method:'POST'
+            });const d=await r.json();if(!r.ok){showToast(d.error||'Check failed.',true);return;}
+            const tot=(d.newFiles?.length||0)+(d.updatedFiles?.length||0)+(d.removedFiles?.length||0);
+            sessionStorage.setItem('lastChecked',d.checkedAt);
+            if(tot===0){if(bar)bar.innerHTML=`<div class="changes-bar" style="color:var(--green)"><i class="bi bi-check-circle-fill"></i> No changes — LMS is up to date. <span style="margin-left:auto;font-size:.76rem;color:var(--muted)">Checked ${
+                safe(d.checkedAt)
+            }</span></div>`;return;
+            }
+            const parts=[];if(d.newFiles?.length)parts.push(`${
+                d.newFiles.length
+            } new`);if(d.updatedFiles?.length)parts.push(`${
+                d.updatedFiles.length
+            } updated`);if(d.removedFiles?.length)parts.push(`${
+                d.removedFiles.length
+            } removed`);
+            if(bar)bar.innerHTML=`<div class="changes-bar"><i class="bi bi-exclamation-circle" style="color:var(--yellow)"></i><span style="flex:1;font-size:.83rem"><strong>LMS Changes:</strong> ${
+                parts.join(', ')
+            }</span><button class="btn-sm-act primary" style="font-size:.76rem" onclick="dlAll()"><i class="bi bi-download me-1"></i>Download All Changes</button></div>`;
+            if(Notification.permission==='granted')new Notification('NUST LMS — New Content',{
+                body:parts.join(', ')+' detected on LMS.'
+            });
+            else if(Notification.permission!=='denied')Notification.requestPermission().then(p=>{
+                if(p==='granted')new Notification('NUST LMS',{body:parts.join(', ')+' found.'
+                });
+            });
+        }catch(e){
+            showToast(e.message,true);
+        }
+    }
+
+    // Drive
+    function driveBannerHTML(){
+        if(!driveStatus.configured)return`<div class="drive-dot nc"></div><div style="flex:1"><span style="font-weight:600;font-size:.88rem">Google Drive not configured</span><div style="font-size:.78rem;color:var(--muted);margin-top:2px">Add credentials.json to enable cloud backup.</div></div>`;
+        if(!driveStatus.authorized)return`<div class="drive-dot off"></div><div style="flex:1"><span style="font-weight:600;font-size:.88rem">Google Drive not connected</span><div style="font-size:.78rem;color:var(--muted);margin-top:2px">Connect to back up downloads automatically.</div></div><button class="btn-sm-act drive" onclick="connDrive()"><i class="bi bi-google me-1"></i>Connect Drive</button>`;
+        return`<div class="drive-dot on"></div><div style="flex:1"><span style="font-weight:600;font-size:.88rem;color:var(--green)">Google Drive connected</span><div style="font-size:.78rem;color:var(--muted);margin-top:2px">Sync available on each course panel.</div></div><button class="btn-sm-act" style="color:var(--red);border-color:var(--red)" onclick="discDrive()"><i class="bi bi-x-circle me-1"></i>Disconnect</button>`;
+    }
+    async function connDrive(){
+        showToast('Opening Google sign-in...');try{const r=await fetch('/api/drive/connect',{
+            method:'POST'
+        });const d=await r.json();if(r.ok){
+            driveStatus.authorized=true;document.getElementById('driveBanner').innerHTML=driveBannerHTML();showToast('Drive connected!');renderPage(dashData);
+        }else showToast(d.error||'Connect failed.',true);
+        }catch(e){
+            showToast(e.message,true);
+        }
+    }
+    async function discDrive(){await fetch('/api/drive/disconnect',{method:'POST'});driveStatus.authorized=false;document.getElementById('driveBanner').innerHTML=driveBannerHTML();showToast('Drive disconnected.');renderPage(dashData);}
+    async function upDrive(sn,id){
+        const btn=document.getElementById('drivebtn-'+id);if(btn){btn.disabled=true;btn.innerHTML='<span class="spinner-sm"></span>';
+        }try{
+            const r=await fetch(`/api/drive/upload/${
+                encodeURIComponent(sn)
+            }`,{
+                method:'POST'
+            });const d=await r.json();if(r.ok){if(btn){
+                btn.classList.add('success');btn.innerHTML='<i class="bi bi-cloud-check"></i>';
+            }showToast(d.message||'Uploaded.');
+            }else{if(btn){
+                btn.disabled=false;btn.innerHTML='<i class="bi bi-cloud-upload"></i>';
+            }showToast(d.error||'Upload failed.',true);
+            }
+        }catch(e){if(btn){
+            btn.disabled=false;btn.innerHTML='<i class="bi bi-cloud-upload"></i>';
+        }showToast(e.message,true);
+        }
+    }
+
+    // Utilities
+    function fIcon(ext){
+        const m={pdf:'icon-pdf',pptx:'icon-pptx',ppt:'icon-pptx',docx:'icon-docx',doc:'icon-docx',zip:'icon-zip',rar:'icon-zip',mp4:'icon-mp4',xlsx:'icon-xlsx',xls:'icon-xlsx'
+        };const e={
+            pdf:'📄',pptx:'📊',ppt:'📊',docx:'📝',doc:'📝',zip:'🗜',rar:'🗜',mp4:'🎬',xlsx:'📈',xls:'📈'
+        };return{
+            cls:m[ext]||'icon-file',em:e[ext]||'📎'
+        };
+    }
+    function fmtBytes(b){
+        if(!b||b===0)return'—';if(b<1024)return b+' B';if(b<1048576)return(b/1024).toFixed(1)+' KB';return(b/1048576).toFixed(1)+' MB';
+    }
+    function timeAgo(ts){
+        const s=Math.floor(Date.now()/1000-ts);if(s<60)return'Just now';if(s<3600)return Math.floor(s/60)+'m ago';if(s<86400)return Math.floor(s/3600)+'h ago';if(s<604800)return Math.floor(s/86400)+'d ago';return new Date(ts*1000).toLocaleDateString('en-PK',{day:'numeric',month:'short'});
+    }
+    function safe(s){
+        if(!s)return'';return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+    }
+    function showErr(m){
+        document.getElementById('pageContent').innerHTML=`<div class="center-screen"><i class="bi bi-exclamation-circle" style="font-size:2rem;color:var(--red)"></i><p style="color:var(--red)">${safe(m)}</p><button class="btn-sm-act primary" onclick="location.reload()">Retry</button></div>`;
+    }
+    let _t;function showToast(m,e=false){
+        const el=document.getElementById('toast');el.textContent=m;el.style.borderColor=e?'var(--red)':'var(--border)';el.classList.add('show');clearTimeout(_t);_t=setTimeout(()=>el.classList.remove('show'),3800);
+    }
+    async function logout(){
+        await fetch('/api/auth/logout',{method:'POST'});window.location.href='/index.html';
     }
 </script>
 </body>
