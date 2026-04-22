@@ -7,7 +7,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import java.util.ArrayList;
 import java.util.List;
 
-// parses Moodle's course content tree and pulls out downloadable file metadata
+// parses Moodle's course content tree and pulls out downloadable file metadata.
 // also reads timemodified for smart sync, so we can skip unchanged files
 public class FileService {
 

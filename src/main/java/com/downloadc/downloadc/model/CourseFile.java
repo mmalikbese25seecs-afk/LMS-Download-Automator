@@ -1,7 +1,7 @@
 package com.downloadc.downloadc.model;
 
 // a single downloadable file from Moodle
-// moodleTimestamp = "timemodified" from lms, used by smart sync to skip unchanged files
+// moodleTimestamp = "timemodified" from lms, used by smart sync to skip unchanged files.
 public class CourseFile {
 
     private final String fileName;

@@ -84,7 +84,7 @@ public class DownloadRecord {
     public long         getMoodleTimestamp() { return moodleTimestamp; }
     public List<String> getTags()            { return tags; }
 
-    // dont add empty/duplicate tags
+    // dont add empty / duplicate tags
     public void addTag(String tag) {
         if (tag != null && !tag.isBlank() && !tags.contains(tag.trim()))
             tags.add(tag.trim());

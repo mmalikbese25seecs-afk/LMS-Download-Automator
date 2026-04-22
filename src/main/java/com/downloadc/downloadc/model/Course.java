@@ -9,7 +9,7 @@ public class Course {
     private final String shortName;
     private final String summary;
 
-    // populated by CourseService after the base course is fetched
+    // populated by CourseService after the base course is fetched.
     private String  instructorName; // first teacher found in Moodle response
     private long    lastAccess;     // Unix epoch, when student last opened this course
     private int     newFilesCount;  // files on lms not yet downloaded locally
