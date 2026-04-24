@@ -29,5 +29,9 @@ public class AnnouncementController {
                     .body(Map.of("error", "Not logged in."));
         }
 
+        // TODO: return actual announcements here
+        return ResponseEntity.ok(List.of());
+
+    }
 
 }
