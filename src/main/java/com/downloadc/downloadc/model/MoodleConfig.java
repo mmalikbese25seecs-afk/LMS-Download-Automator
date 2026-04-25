@@ -1,7 +1,6 @@
 package com.downloadc.downloadc.model;
 
 // Holds LMS username, password, and the token we get
-// This is ENCAPSULATION — we keep related data together in one object.
 
 public class MoodleConfig {
 
@@ -11,8 +10,9 @@ public class MoodleConfig {
     private String password;
     private String token;
     private int userId;
+    private String timezone;
 
-    // The URL of the LmS thst is same for every student
+    // The URL of the LMS that is same for every student
     private static final String BASE_URL = "https://lms.nust.edu.pk/portal";
 
     // Constructor

@@ -3,6 +3,7 @@ package com.downloadc.downloadc.downloader;
 import com.downloadc.downloadc.api.DownloadHistoryService;
 import com.downloadc.downloadc.model.CourseFile;
 import com.downloadc.downloadc.model.DownloadRecord;
+import com.downloadc.downloadc.model.DownloadStatus;
 import com.downloadc.downloadc.model.MoodleConfig;
 
 import javax.net.ssl.SSLContext;
@@ -38,57 +39,55 @@ public class FileDownloader {
         this.historyService = historyService;
 
         try {
-            // trust all SSL 
+            // trust all SSL
             TrustManager[] trustAll = new TrustManager[]{
-                new X509TrustManager() {
-                    public java.security.cert.X509Certificate[] getAcceptedIssuers() {
-                        return null;
+                    new X509TrustManager() {
+                        public java.security.cert.X509Certificate[] getAcceptedIssuers() {
+                            return null;
+                        }
+                        public void checkClientTrusted(java.security.cert.X509Certificate[] c, String a) {}
+                        public void checkServerTrusted(java.security.cert.X509Certificate[] c, String a) {}
                     }
-                    public void checkClientTrusted(java.security.cert.X509Certificate[] c, String a) {}
-                    public void checkServerTrusted(java.security.cert.X509Certificate[] c, String a) {}
-                }
             };
 
             SSLContext ssl = SSLContext.getInstance("SSL");
             ssl.init(null, trustAll, new SecureRandom());
 
-            this.httpClient = HttpClient.newBuilder().sslContext(ssl)
-                    .build();
+            this.httpClient = HttpClient.newBuilder().sslContext(ssl).build();
 
         } catch (Exception e) {
             throw new RuntimeException("SSL setup failed : " + e.getMessage(), e);
         }
     }
 
-    // download a file
-    // return true if downloaded, false if already exists
-    public String download(CourseFile courseFile) throws Exception {
+    // download a file, returns DownloadStatus enum
+    public DownloadStatus download(CourseFile courseFile) throws Exception {
 
         String safeCourse = sanitize(courseFile.getCourseName());
-        String safeFile = sanitize(courseFile.getFileName());
+        String safeFile   = sanitize(courseFile.getFileName());
 
         Path courseFolder = Paths.get(DOWNLOAD_ROOT, safeCourse);
-        Path destination = courseFolder.resolve(safeFile);
-        Path partFile = courseFolder.resolve(safeFile + ".part");
+        Path destination  = courseFolder.resolve(safeFile);
+        Path partFile     = courseFolder.resolve(safeFile + ".part");
 
         // check history
         Optional<DownloadRecord> prior = historyService.findRecord(
                 safeFile, courseFile.getCourseName()
         );
-        
+
         // skip if already exists
         if (Files.exists(destination)) {
 
             if (prior.isPresent()) {
                 DownloadRecord rec = prior.get();
 
-                long lmsTs = courseFile.getMoodleTimestamp();
+                long lmsTs   = courseFile.getMoodleTimestamp();
                 long localTs = rec.getMoodleTimestamp();
 
-                //if same then skip
+                // if same then skip
                 if (lmsTs > 0 && localTs > 0 && lmsTs <= localTs) {
                     System.out.println("SKIP: " + safeFile);
-                    return "SKIPPED";
+                    return DownloadStatus.SKIPPED;
                 }
 
                 // if size matches skip
@@ -96,32 +95,31 @@ public class FileDownloader {
                 if (lmsTs == 0 && courseFile.getFileSize() > 0
                         && localSize == courseFile.getFileSize()) {
                     System.out.println("SKIP size: " + safeFile);
-                    return "SKIPPED";
+                    return DownloadStatus.SKIPPED;
                 }
 
-                // update
+                // update, delete old file and re-download
                 System.out.println("UPDATE: " + safeFile);
                 Files.delete(destination);
 
-            } 
-            else {
+            } else {
                 // no history
                 if (courseFile.getFileSize() > 0
                         && Files.size(destination) == courseFile.getFileSize()) {
                     System.out.println("SKIP no history: " + safeFile);
-                    return "SKIPPED";
+                    return DownloadStatus.SKIPPED;
                 }
 
                 System.out.println("Re-download: " + safeFile);
                 Files.delete(destination);
             }
         }
-        
+
         // create folder
         Files.createDirectories(courseFolder);
 
         // build URL
-        String url = courseFile.getFileUrl();
+        String url     = courseFile.getFileUrl();
         String authUrl = url.contains("?") ? url + "&token=" + config.getToken()
                 : url + "?token=" + config.getToken();
 
@@ -132,8 +130,9 @@ public class FileDownloader {
             System.out.println("Resuming " + safeFile);
         }
 
-        // Request
-        HttpRequest.Builder reqBuilder = HttpRequest.newBuilder().uri(URI.create(authUrl))
+        // Build request
+        HttpRequest.Builder reqBuilder = HttpRequest.newBuilder()
+                .uri(URI.create(authUrl))
                 .GET();
 
         if (resumeFrom > 0) {
@@ -149,20 +148,17 @@ public class FileDownloader {
 
         // Check status
         if (status != 200 && status != 206) {
-
             if (resumeFrom > 0 && status == 416) {
                 Files.deleteIfExists(partFile);
                 System.out.println("Restarting: " + safeFile);
                 return download(courseFile);
             }
-
             throw new Exception("HTTP " + status);
         }
 
-        long bytesWritten = resumeFrom;
-        MessageDigest md5 = MessageDigest.getInstance("MD5");
-
-        boolean freshDownload = (resumeFrom == 0);
+        long          bytesWritten   = resumeFrom;
+        MessageDigest md5            = MessageDigest.getInstance("MD5");
+        boolean       freshDownload  = (resumeFrom == 0);
 
         // Write file
         try (InputStream in = response.body();
@@ -175,14 +171,12 @@ public class FileDownloader {
 
             while ((read = in.read(buffer)) != -1) {
                 out.write(buffer, 0, read);
-
                 if (freshDownload) md5.update(buffer, 0, read);
-
                 bytesWritten += read;
             }
         }
 
-        // Rename
+        // Rename .part into final file
         Files.move(partFile, destination);
 
         String hashHex = freshDownload
@@ -207,9 +201,9 @@ public class FileDownloader {
         historyService.addRecord(record);
 
         // return result
-        if (resumeFrom > 0) return "RESUMED";
-        if (prior.isPresent()) return "UPDATED";
-        return "DOWNLOADED";
+        if (resumeFrom > 0)   return DownloadStatus.RESUMED;
+        if (prior.isPresent()) return DownloadStatus.UPDATED;
+        return DownloadStatus.DOWNLOADED;
     }
 
     // clean file name

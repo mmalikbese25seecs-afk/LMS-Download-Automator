@@ -7,27 +7,24 @@ import com.downloadc.downloadc.config.SessionManager;
 import com.downloadc.downloadc.downloader.FileDownloader;
 import com.downloadc.downloadc.model.Course;
 import com.downloadc.downloadc.model.CourseFile;
+import com.downloadc.downloadc.model.DownloadStatus;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.Map;;
+import java.util.Map;
 
 // Controller for course files and downloading
 @RestController
 @RequestMapping("/api")
-
-
 public class FileController {
 
     @Autowired
     private SessionManager sessionManager;
 
     @Autowired
-
-// Log downloads
-    private DownloadHistoryService historyService; 
+    private DownloadHistoryService historyService;
 
     // Get all files for a course
     @GetMapping("/courses/{courseId}/files")
@@ -43,22 +40,19 @@ public class FileController {
             MoodleApiClient apiClient = new MoodleApiClient(sessionManager.getActiveConfig());
             FileService fileService = new FileService(apiClient);
 
-            // create course object 
-
-           Course course = new Course(courseId, "", String.valueOf(courseId), "");
+            // create course object
+            Course course = new Course(courseId, "", String.valueOf(courseId), "");
 
             // return files
             return ResponseEntity.ok(fileService.getFilesForCourse(course));
 
-
-        } 
-        catch (Exception e) {
+        } catch (Exception e) {
             return ResponseEntity.status(500).body(Map.of("error", e.getMessage()));
         }
     }
 
     // download all files of a course
-@PostMapping("/download/{courseId}")
+    @PostMapping("/download/{courseId}")
     public ResponseEntity<?> downloadCourse(
             @PathVariable int courseId,
             @RequestBody Map<String, String> body) {
@@ -90,10 +84,10 @@ public class FileController {
                     // call downloader and count result
                     switch (fileDownloader.download(file)) {
                         case DOWNLOADED -> downloaded++;
-                        case UPDATED -> updated++;
-                        case RESUMED ->resumed++;
-                        case SKIPPED -> skipped++;
-                        case FAILED ->failed++;
+                        case UPDATED    -> updated++;
+                        case RESUMED    -> resumed++;
+                        case SKIPPED    -> skipped++;
+                        case FAILED     -> failed++;
                     }
                 } catch (Exception e) {
                     failed++;
@@ -104,13 +98,13 @@ public class FileController {
 
             // return summary
             return ResponseEntity.ok(Map.of(
-                    "courseId", courseId,
-                    "totalFiles", files .size(),
-                    "downloaded", downloaded,
-                    "updated", updated,
-                    "resumed", resumed,
-                    "skipped", skipped,
-                    "failed", failed
+                    "courseId",    courseId,
+                    "totalFiles",  files.size(),
+                    "downloaded",  downloaded,
+                    "updated",     updated,
+                    "resumed",     resumed,
+                    "skipped",     skipped,
+                    "failed",      failed
             ));
 
         } catch (Exception e) {

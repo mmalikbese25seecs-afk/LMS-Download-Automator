@@ -1,10 +1,10 @@
 package com.downloadc.downloadc.api;
 
 import com.downloadc.downloadc.config.SessionManager;
-import com.downloadc.downloadc.controller.FileController;
 import com.downloadc.downloadc.downloader.FileDownloader;
 import com.downloadc.downloadc.model.Course;
 import com.downloadc.downloadc.model.CourseFile;
+import com.downloadc.downloadc.model.DownloadStatus;
 import com.downloadc.downloadc.model.MoodleConfig;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
