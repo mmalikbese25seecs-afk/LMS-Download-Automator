@@ -2,7 +2,7 @@ package com.downloadc.downloadc.model;
 
 // a single downloadable file from Moodle
 // moodleTimestamp = "timemodified" from lms, used by smart sync to skip unchanged files.
-public class CourseFile {
+public class CourseFile implements Downloadable{
 
     private final String fileName;
     private final String fileUrl;         // needs auth token appended before downloading
@@ -14,26 +14,44 @@ public class CourseFile {
     public CourseFile(String fileName, String fileUrl,
                       long fileSize, String fileType,
                       String courseName, long moodleTimestamp) {
-        this.fileName        = fileName;
-        this.fileUrl         = fileUrl;
-        this.fileSize        = fileSize;
-        this.fileType        = fileType;
-        this.courseName      = courseName;
+        this.fileName = fileName;
+        this.fileUrl = fileUrl;
+        this.fileSize = fileSize;
+        this.fileType = fileType;
+        this.courseName = courseName;
         this.moodleTimestamp = moodleTimestamp;
     }
 
-    // old constructor without timestamp, defaults to 0
+    // Constructor
     public CourseFile(String fileName, String fileUrl,
                       long fileSize, String fileType, String courseName) {
         this(fileName, fileUrl, fileSize, fileType, courseName, 0L);
     }
-
-    public String getFileName()        { return fileName; }
-    public String getFileUrl()         { return fileUrl; }
-    public long   getFileSize()        { return fileSize; }
-    public String getFileType()        { return fileType; }
-    public String getCourseName()      { return courseName; }
-    public long   getMoodleTimestamp() { return moodleTimestamp; }
+    
+@Override
+    public String getFileName() {
+        return fileName;
+    }
+    @Override
+    public String getFileUrl(){
+        return fileUrl; 
+    }
+    @Override
+    public long   getFileSize(){
+        return fileSize;
+    }
+    @Override
+    public String getFileType(){
+        return fileType; 
+    }
+    @Override
+    public String getCourseName(){
+        return courseName; 
+    }
+    @Override
+    public long   getMoodleTimestamp() { 
+        return moodleTimestamp; 
+    }
 
     @Override
     public String toString() {
