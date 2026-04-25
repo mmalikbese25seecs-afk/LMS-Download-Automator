@@ -61,8 +61,7 @@ public class FileDownloader {
     }
 
     // download a file, returns DownloadStatus enum
-    public DownloadStatus download(CourseFile courseFile) throws Exception {
-
+    public DownloadStatus download(Downloadable courseFile) throws Exception {
         String safeCourse = sanitize(courseFile.getCourseName());
         String safeFile   = sanitize(courseFile.getFileName());
 
@@ -120,8 +119,7 @@ public class FileDownloader {
 
         // build URL
         String url     = courseFile.getFileUrl();
-        String authUrl = url.contains("?") ? url + "&token=" + config.getToken()
-                : url + "?token=" + config.getToken();
+        String authUrl = courseFile.getAuthenticatedUrl(config.getToken());
 
         // Resume check
         long resumeFrom = 0;
