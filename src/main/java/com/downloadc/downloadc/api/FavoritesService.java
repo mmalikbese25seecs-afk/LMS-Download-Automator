@@ -14,16 +14,21 @@ import java.util.Set;
 // saves pinned course ids to downloads/favorites.json as a simple int array e.g. [12,47,93]
 // used by CourseService, FavoritesController, and DashboardService
 @Service
-public class FavoritesService {
+public class FavoritesService extends BaseStorageService  {
 
-    private static final Path FAVORITES_FILE = Paths.get("downloads", "favorites.json");
-    private final ObjectMapper objectMapper = new ObjectMapper();
+    public Path getStorageFile() {
+        return storagePath("favorites.json");
+    }
+
+        public FavoritesService() {
+        super();
+    }
 
     public synchronized Set<Integer> getFavoriteIds() {
-        if (!Files.exists(FAVORITES_FILE)) return new HashSet<>();
+        if (!Files.exists(getStorageFile())) return new HashSet<>();
         try {
             return objectMapper.readValue(
-                    FAVORITES_FILE.toFile(),
+                    getStorageFile().toFile(),
                     new TypeReference<Set<Integer>>() {}
             );
         } catch (IOException e) {
@@ -69,7 +74,7 @@ public class FavoritesService {
     }
 
     private void save(Set<Integer> ids) throws IOException {
-        Files.createDirectories(FAVORITES_FILE.getParent());
-        objectMapper.writeValue(FAVORITES_FILE.toFile(), ids);
+        Files.createDirectories(getStorageFile().getParent());
+        objectMapper.writeValue(getStorageFile().toFile(), ids);
     }
 }
