@@ -39,7 +39,7 @@ public class PdfSummarizerService {
             PDFTextStripper stripper = new PDFTextStripper();
 
 // Keep correct reading order
-            stripper.setSortByPosition(true); 
+            stripper.setSortByPosition(true);
 
             fullText = stripper.getText(doc);
         }
@@ -52,7 +52,7 @@ public class PdfSummarizerService {
         // Generate summary
         String summary = extractiveSummary(processText, SUMMARY_SENTENCES);
 
-        // preview 
+        // preview
         String preview = processText.length() > 500
                 ? processText.substring(0, 500) + "..."
                 : processText;
@@ -74,9 +74,9 @@ public class PdfSummarizerService {
 
         // some keywords
         String[] keywords = {"therefore", "however", "conclusion", "result", "important",
-             "define", "concept", "method", "approach", "algorithm",
-               "example", "objective", "purpose", "summary", "analysis",
-               "function", "class", "object", "interface", "input", "output"
+                "define", "concept", "method", "approach", "algorithm",
+                "example", "objective", "purpose", "summary", "analysis",
+                "function", "class", "object", "interface", "input", "output"
         };
 
         double[] scores = new double[sentences.length];
