@@ -1,58 +1,54 @@
-
 package com.downloadc.downloadc.api;
-
 
 import java.io.InputStream;
 import com.downloadc.downloadc.model.SummaryResult;
+import org.apache.pdfbox.Loader;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.text.PDFTextStripper;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
-
-// Service to extract text from pdf and generate summary
 @Service
 public class PdfSummarizerService {
 
-    // Limited text size to avoid issues with large pdfs
+    // Max characters to process from extracted text
     private static final int MAX_CHARS = 20000;
 
-    //Sentences we want in summary
+    // Number of sentences to include in summary
     private static final int SUMMARY_SENTENCES = 15;
 
-    // Main function to process pdf file
+    // Extracts text from PDF, cleans it, and returns a summary result
     public SummaryResult summarize(MultipartFile file) throws Exception {
 
         String fileName = file.getOriginalFilename() != null ? file.getOriginalFilename() : "document.pdf";
+        System.out.println("Processing file: " + fileName);
 
-        System.out.println("Processing file : " + fileName);
-
-        String fullText ;
+        String fullText = "";
         int pageCount;
 
-        // xtract text using pdfbox
+        // Load and extract text from the PDF
         try (InputStream is = file.getInputStream();
-             PDDocument doc = PDDocument.load(is)) {
+             PDDocument doc = Loader.loadPDF(is.readAllBytes())) {
 
             pageCount = doc.getNumberOfPages();
 
             PDFTextStripper stripper = new PDFTextStripper();
-
-// Keep correct reading order
-            stripper.setSortByPosition(true);
-
+            stripper.setSortByPosition(true); // Preserve reading order
             fullText = stripper.getText(doc);
         }
 
-        // limit text length if too big
-        String processText = fullText.length() > MAX_CHARS
-                ? fullText.substring(0, MAX_CHARS)
-                : fullText;
+        // Clean raw text before processing
+        String cleanedText = cleanText(fullText);
 
-        // Generate summary
+        // shorten if text exceeds limit
+        String processText = cleanedText.length() > MAX_CHARS
+                ? cleanedText.substring(0, MAX_CHARS)
+                : cleanedText;
+
+        // Generate extractive summary
         String summary = extractiveSummary(processText, SUMMARY_SENTENCES);
 
-        // preview
+        // Create a short preview of the text
         String preview = processText.length() > 500
                 ? processText.substring(0, 500) + "..."
                 : processText;
@@ -60,19 +56,20 @@ public class PdfSummarizerService {
         return new SummaryResult(fileName, pageCount, preview, summary);
     }
 
-
-    // simple summarization
+    // Scores and selects the most important sentences from the text
     private String extractiveSummary(String text, int maxSentences) {
 
+        // Split text into sentences
         String[] sentences = text.split("(?<=[.!?])\\s+");
 
-        if (sentences.length== 0)
+        if (sentences.length == 0)
             return "Could not generate summary";
 
+        // Return as-is if already within limit
         if (sentences.length <= maxSentences)
             return String.join(" ", sentences);
 
-        // some keywords
+        // Keywords that indicate important sentences
         String[] keywords = {"therefore", "however", "conclusion", "result", "important",
                 "define", "concept", "method", "approach", "algorithm",
                 "example", "objective", "purpose", "summary", "analysis",
@@ -82,31 +79,31 @@ public class PdfSummarizerService {
         double[] scores = new double[sentences.length];
 
         for (int i = 0; i < sentences.length; i++) {
-
             String s = sentences[i];
             String lower = s.toLowerCase();
 
-            // bonus for first/last sentence
+            // Boost first and last sentences
             if (i == 0 || i == sentences.length - 1)
                 scores[i] += 2;
 
-            // keyword scoring
+            // Boost sentences containing keywords
             for (String kw : keywords) {
                 if (lower.contains(kw))
                     scores[i] += 3;
             }
 
-            // check sentence length
             String[] words = s.trim().split("\\s+");
 
+            // Penalize very short sentences
             if (words.length < 6)
                 scores[i] -= 5;
 
+            // Reward longer, more informative sentences
             if (words.length > 10)
                 scores[i] += Math.min(words.length * 0.1, 2);
         }
 
-        // sort sentences by score
+        // Sort sentence indices by score descending
         Integer[] indices = new Integer[sentences.length];
         for (int i = 0; i < indices.length; i++)
             indices[i] = i;
@@ -114,19 +111,17 @@ public class PdfSummarizerService {
         java.util.Arrays.sort(indices,
                 (a, b) -> Double.compare(scores[b], scores[a]));
 
-        // pick top sentences
+        // Pick top-scoring sentences, ignoring very low scores
         java.util.List<Integer> top = new java.util.ArrayList<>();
-
         for (int i = 0; i < Math.min(maxSentences, indices.length); i++) {
             if (scores[indices[i]] > -3)
                 top.add(indices[i]);
         }
 
-        // Keep original order
+        // Restore original sentence order
         java.util.Collections.sort(top);
 
         StringBuilder sb = new StringBuilder();
-
         for (int idx : top) {
             sb.append(sentences[idx].trim()).append(" ");
         }
@@ -134,14 +129,13 @@ public class PdfSummarizerService {
         return sb.toString().trim();
     }
 
-    // Clean extracted text
+    // Normalizes whitespace and removes stray page numbers from extracted text
     private String cleanText(String raw) {
-
         return raw
-                .replaceAll("\\r\\n|\\r", "\n")
-                .replaceAll("\\n{3,}", "\n\n")
-                .replaceAll("[ \\t]{2,}", " ")
-                .replaceAll("(?m)^\\s*\\d+\\s*$", "")
+                .replaceAll("\\r\\n|\\r", "\n")        // Normalize line endings
+                .replaceAll("\\n{3,}", "\n\n")          // Collapse excess blank lines
+                .replaceAll("[ \\t]{2,}", " ")          // Collapse extra spaces/tabs
+                .replaceAll("(?m)^\\s*\\d+\\s*$", "")  // Remove lone page numbers
                 .trim();
     }
 }
