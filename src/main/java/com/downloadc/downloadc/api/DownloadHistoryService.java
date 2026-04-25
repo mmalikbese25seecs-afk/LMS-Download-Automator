@@ -15,18 +15,19 @@ import java.util.stream.Collectors;
 // Service class to store and manage download history in a JSON file
 
 @Service
-public class DownloadHistoryService {
+public class DownloadHistoryService extends BaseStorageService {
 
     // path where history is saved
-    private static final Path HISTORY_FILE = Paths.get("downloads", "history.json");
-
-    private final ObjectMapper objectMapper;
-
-    // constructor setup object mapper to make json readable 
-    public DownloadHistoryService() {
-        this.objectMapper = new ObjectMapper().enable(SerializationFeature.INDENT_OUTPUT); 
+ @Override
+    protected Path getStorageFile() {
+        return storagePath("history.json");
     }
-
+    
+// Constructor
+    public DownloadHistoryService() {
+        super(); // calls baseStorageService constructor which sets up object Mapper
+    }
+    
     // add a new record to history
     public synchronized void addRecord(DownloadRecord record) {
         try {
@@ -83,7 +84,7 @@ public class DownloadHistoryService {
             writeAll(all);
         } 
         catch (IOException e) {
-            System.out.println("Remove error: " + e.getMessage());
+            System.out.println("Remove error : " + e.getMessage());
         }
     }
 
