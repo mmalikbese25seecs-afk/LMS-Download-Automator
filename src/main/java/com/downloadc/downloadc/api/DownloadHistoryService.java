@@ -5,7 +5,7 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import org.springframework.stereotype.Service;
-
+ 
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -44,13 +44,13 @@ public class DownloadHistoryService extends BaseStorageService {
     
     public synchronized List<DownloadRecord> readAll() {
    // Returns empty list if file not found
-        if (!Files.exists(HISTORY_FILE)) {
+        if (!Files.exists(getStorageFile())) {
             return new ArrayList<>();
         }
 
         try {
             return objectMapper.readValue(
-                    HISTORY_FILE.toFile(),
+                    getStorageFile().toFile(),
                     new TypeReference<List<DownloadRecord>>() {}
             );
         } 
@@ -236,8 +236,8 @@ public class DownloadHistoryService extends BaseStorageService {
 
     // write to file
     private void writeAll(List<DownloadRecord> records) throws IOException {
-        Files.createDirectories(HISTORY_FILE.getParent());
-        objectMapper.writeValue(HISTORY_FILE.toFile(), records);
+        Files.createDirectories(getStorageFile().getParent());
+        objectMapper.writeValue(getStorageFile().toFile(), records);
     }
 
     // stats record
