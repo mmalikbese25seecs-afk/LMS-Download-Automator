@@ -19,7 +19,7 @@ public class DownloadHistoryService extends BaseStorageService {
 
     // path where history is saved
  @Override
-    protected Path getStorageFile() {
+    public Path getStorageFile() {
         return storagePath("history.json");
     }
     

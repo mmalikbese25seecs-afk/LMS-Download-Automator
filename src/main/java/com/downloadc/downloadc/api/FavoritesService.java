@@ -77,4 +77,10 @@ public class FavoritesService extends BaseStorageService  {
         Files.createDirectories(getStorageFile().getParent());
         objectMapper.writeValue(getStorageFile().toFile(), ids);
     }
+
+    @Override
+    public synchronized void clearAll() throws IOException {
+        save(new HashSet<>());
+        System.out.println("Favorites cleared");
+    }
 }

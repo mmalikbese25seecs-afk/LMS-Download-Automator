@@ -8,6 +8,8 @@ public interface Downloadable {
     String getFileName();
     long   getFileSize();
     String getCourseName();
+    public long   getMoodleTimestamp();
+    public String getFileType();
 
     // Default method (Java 8+): concrete behaviour in an interface
     // Shows your professor you know the full interface feature set

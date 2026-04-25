@@ -11,6 +11,16 @@ public class Course extends LmsResource {
     private int     newFilesCount;  // files on lms not yet downloaded locally
     private boolean favorite;       // pinned by user, persisted by FavoritesService
 
+    public Course(int id, String fullName, String shortName, String summary) {
+        super(id, fullName);
+        this.shortName = shortName;
+        this.summary = summary;
+        this.instructorName = "Unknown";
+        this.lastAccess = 0;
+        this.newFilesCount = 0;
+        this.favorite = false;
+    }
+
     public Course(int id, String fullName, String shortName, String summary, String instructorName, long lastAccess, int newFilesCount, boolean favorite) {
         super(id, fullName);
         this.shortName      = shortName;

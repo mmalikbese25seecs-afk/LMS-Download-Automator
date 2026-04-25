@@ -5,6 +5,7 @@ import com.downloadc.downloadc.model.CourseFile;
 import com.downloadc.downloadc.model.DownloadRecord;
 import com.downloadc.downloadc.model.DownloadStatus;
 import com.downloadc.downloadc.model.MoodleConfig;
+import com.downloadc.downloadc.model.Downloadable;
 
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.TrustManager;
