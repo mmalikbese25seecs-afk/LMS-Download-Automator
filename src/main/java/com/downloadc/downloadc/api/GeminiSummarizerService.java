@@ -16,7 +16,7 @@ import java.time.Duration;
 // Service to call Gemini api and summarize PDF text
 @Service
 
-public class GeminiSummarizerService {
+public class GeminiSummarizerService implements Summarizable {
 
     @Value("${gemini.api.key:}")
     private String apiKey;
