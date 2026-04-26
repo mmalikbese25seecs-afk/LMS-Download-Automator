@@ -35,6 +35,9 @@ public class PdfSummarizerService {
             PDFTextStripper stripper = new PDFTextStripper();
             stripper.setSortByPosition(true); // Preserve reading order
             fullText = stripper.getText(doc);
+            if (fullText == null || fullText.trim().isEmpty()) {
+                throw new Exception("No readable text found in PDF (maybe scanned PDF)");
+            }
         }
 
         // Clean raw text before processing
@@ -53,7 +56,13 @@ public class PdfSummarizerService {
                 ? processText.substring(0, 500) + "..."
                 : processText;
 
-        return new SummaryResult(fileName, pageCount, preview, summary);
+        return new SummaryResult(
+                fileName,
+                pageCount,
+                fullText,
+                preview,
+                summary
+        );
     }
 
     // Scores and selects the most important sentences from the text

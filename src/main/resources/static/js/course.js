@@ -1,6 +1,7 @@
 /* NUST LMS Course Page */
 
 let completedIds = new Set();
+let courseData = null;
 
 // TYPE CONFIG
 const TYPE_CONFIG = {
@@ -10,6 +11,7 @@ const TYPE_CONFIG = {
     quiz:       { icon: "fa-solid fa-circle-question", label: "Quiz",       cssClass: "type-quiz"       },
     word:       { icon: "fa-solid fa-file-word",       label: "Word Doc",   cssClass: "type-word"       },
 };
+
 function getTypeConfig(type) {
     return TYPE_CONFIG[type] || TYPE_CONFIG["pdf"];
 }
@@ -28,21 +30,28 @@ function applyTheme(dark) {
 
 themeToggle.addEventListener("change", () => applyTheme(themeToggle.checked));
 
+// Back button
+document.querySelector(".cal-back-btn").addEventListener("click", () => {
+    window.location.href = "/dashboard.html";
+});
+
 // POPULATE HERO
 function populateHero(data) {
-    document.title = `${data.code} — NUST LMS`;
-    document.getElementById("breadcrumbCourse").textContent = `${data.code}: ${data.title}`;
-    document.getElementById("heroCourseCode").textContent   = data.code;
-    document.getElementById("heroCourseTitle").textContent  = data.title;
-    document.getElementById("heroCourseDesc").textContent   = data.description;
+    const code = data.shortName || "UNKNOWN";
+    const title = data.weeks && data.weeks.length > 0 ? data.weeks[0].sectionName : "Course";
+    const description = "";
+
+    document.title = `${code} — NUST LMS`;
+    document.getElementById("breadcrumbCourse").textContent = `${code}: ${title}`;
+    document.getElementById("heroCourseCode").textContent   = code;
+    document.getElementById("heroCourseTitle").textContent  = title;
+    document.getElementById("heroCourseDesc").textContent   = description;
 
     // Stats
-    const totalWeeks       = data.weeks.length;
-    const totalResources   = data.weeks.reduce((s, w) => s + w.resources.length, 0);
-    const totalAssignments = data.weeks.reduce((s, w) =>
-        s + w.resources.filter(r => r.type === "assignment").length, 0);
-    const dueSoon = data.weeks.reduce((s, w) =>
-        s + w.resources.filter(r => r.dueDate).length, 0);
+    const totalWeeks       = data.weeks ? data.weeks.length : 0;
+    const totalResources   = data.totalFiles || 0;
+    const totalAssignments = data.totalAssignments || 0;
+    const dueSoon = 0;
 
     document.getElementById("statWeeks").textContent       = totalWeeks;
     document.getElementById("statResources").textContent   = totalResources;
@@ -50,12 +59,11 @@ function populateHero(data) {
     document.getElementById("statDue").textContent         = dueSoon;
 
     // Progress ring
-    const pct = Math.round((data.completedCount / data.totalCount) * 100);
+    const totalCount = data.totalCount || totalResources;
+    const pct = totalCount > 0 ? Math.round((data.completedCount / totalCount) * 100) : 0;
     document.getElementById("progressPct").textContent = pct + "%";
-    // circumference = 2π×34 ≈ 213.6
     const circumference = 2 * Math.PI * 34;
     const offset = circumference - (pct / 100) * circumference;
-    // Animate after a tiny delay so transition fires
     setTimeout(() => {
         document.getElementById("progressRing").style.strokeDashoffset = offset;
     }, 120);
@@ -66,6 +74,11 @@ function buildWeeks(data) {
     const container = document.getElementById("weekSections");
     container.innerHTML = "";
 
+    if (!data.weeks || data.weeks.length === 0) {
+        container.innerHTML = '<div class="empty-msg" style="padding: 20px; text-align: center;">No course content available.</div>';
+        return;
+    }
+
     data.weeks.forEach((week, wi) => {
         const section = document.createElement("div");
         section.className = "week-section";
@@ -75,9 +88,9 @@ function buildWeeks(data) {
         const header = document.createElement("div");
         header.className = "week-header";
         header.innerHTML = `
-            <span class="week-label">${week.label}</span>
+            <span class="week-label">${week.dateRange || week.sectionName}</span>
             <div class="week-line"></div>
-            <span class="week-count" style="font-size:0.75rem;color:#555">${week.resources.length} items</span>
+            <span class="week-count" style="font-size:0.75rem;color:#555">${week.files ? week.files.length : 0} items</span>
             <i class="fa-solid fa-chevron-down week-toggle-icon"></i>
         `;
         header.addEventListener("click", () => {
@@ -88,29 +101,36 @@ function buildWeeks(data) {
         const itemsList = document.createElement("div");
         itemsList.className = "week-items";
 
-        week.resources.forEach(res => {
-            const cfg  = getTypeConfig(res.type);
-            const done = completedIds.has(res.id);
-            const row  = document.createElement("div");
-            row.className = `resource-row ${cfg.cssClass} ${done ? "done" : ""}`;
-            row.dataset.type  = res.type;
-            row.dataset.title = res.title.toLowerCase();
-            row.dataset.id    = res.id;
+        if (week.files && week.files.length > 0) {
+            week.files.forEach(res => {
+                const cfg  = getTypeConfig(res.fileType || "pdf");
+                const done = completedIds.has(res.fileName);
+                const row  = document.createElement("div");
+                row.className = `resource-row ${cfg.cssClass} ${done ? "done" : ""}`;
+                row.dataset.type  = res.fileType || "pdf";
+                row.dataset.title = (res.fileName || "").toLowerCase();
+                row.dataset.id    = res.fileName;
 
-            row.innerHTML = `
-                <div class="resource-icon-wrap">
-                    <i class="${cfg.icon}"></i>
-                </div>
-                <span class="resource-name">${res.title}</span>
-                <span class="resource-type-label">${cfg.label}</span>
-                <div class="resource-check">
-                    ${done ? '<i class="fa-solid fa-check"></i>' : ''}
-                </div>
-            `;
+                row.innerHTML = `
+                    <div class="resource-icon-wrap">
+                        <i class="${cfg.icon}"></i>
+                    </div>
+                    <span class="resource-name">${res.fileName}</span>
+                    <span class="resource-type-label">${cfg.label}</span>
+                    <div class="resource-check">
+                        ${done ? '<i class="fa-solid fa-check"></i>' : ''}
+                    </div>
+                `;
 
-            row.addEventListener("click", () => openModal(res, week.label, cfg));
-            itemsList.appendChild(row);
-        });
+                row.addEventListener("click", () => openModal(res, week.dateRange || week.sectionName, cfg));
+                itemsList.appendChild(row);
+            });
+        } else {
+            const emptyMsg = document.createElement("div");
+            emptyMsg.className = "empty-msg";
+            emptyMsg.textContent = "No files in this section";
+            itemsList.appendChild(emptyMsg);
+        }
 
         section.appendChild(header);
         section.appendChild(itemsList);
@@ -123,24 +143,27 @@ const bsModal = new bootstrap.Modal(document.getElementById("resourceModal"));
 
 function openModal(res, weekLabel, cfg) {
     document.getElementById("modalIcon").className = `cal-modal-icon`;
-    document.getElementById("modalIcon").style.background = getIconBg(res.type);
-    document.getElementById("modalIcon").style.color = getIconColor(res.type);
+    document.getElementById("modalIcon").style.background = getIconBg(res.fileType || "pdf");
+    document.getElementById("modalIcon").style.color = getIconColor(res.fileType || "pdf");
     document.getElementById("modalIcon").innerHTML = `<i class="${cfg.icon}"></i>`;
-    document.getElementById("modalTitle").textContent = res.title;
+    document.getElementById("modalTitle").textContent = res.fileName;
     document.getElementById("modalWeek").textContent  = weekLabel;
     document.getElementById("modalType").textContent  = cfg.label;
-    document.getElementById("modalSize").textContent  = res.size || "—";
+    document.getElementById("modalSize").textContent  = formatBytes(res.fileSize || 0);
 
     const dueDateRow = document.getElementById("modalDueDateRow");
-    if (res.dueDate) {
-        dueDateRow.style.display = "";
-        document.getElementById("modalDueDate").textContent = res.dueDate;
-    } else {
-        dueDateRow.style.display = "none";
-    }
+    dueDateRow.style.display = "none";
 
-    document.getElementById("modalOpenBtn").href = res.url;
+    document.getElementById("modalOpenBtn").href = res.fileUrl || "#";
+    document.getElementById("modalOpenBtn").target = "_blank";
     bsModal.show();
+}
+
+function formatBytes(bytes) {
+    if (!bytes) return "—";
+    if (bytes < 1024) return bytes + " B";
+    if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + " KB";
+    return (bytes / (1024 * 1024)).toFixed(1) + " MB";
 }
 
 function getIconBg(type) {
@@ -150,6 +173,7 @@ function getIconBg(type) {
     };
     return map[type] || "rgba(255,255,255,0.08)";
 }
+
 function getIconColor(type) {
     const map = {
         lecture: "#3b82f6", pdf: "#e74c3c",
@@ -188,13 +212,59 @@ function applyFilterSearch() {
     });
 }
 
-// PUBLIC RENDER FUNCTION
-function renderCourse(data, doneIds = new Set()) {
-    completedIds = doneIds;
-    populateHero(data);
-    buildWeeks(data);
+// LOGOUT
+function logout() {
+    fetch('/api/auth/logout', { method: 'POST' })
+        .then(() => {
+            window.location.href = '/index.html';
+        })
+        .catch(e => console.error('Logout failed:', e));
 }
 
 // INIT
-const savedTheme2 = localStorage.getItem("lmsTheme") || "dark";
-applyTheme(savedTheme2 === "dark");
+async function initCoursePage() {
+    const savedTheme = localStorage.getItem("lmsTheme") || "dark";
+    applyTheme(savedTheme === "dark");
+
+    // Get course ID from URL or localStorage
+    const params = new URLSearchParams(window.location.search);
+    let courseId = params.get('id');
+    let shortName = params.get('name');
+
+    if (!courseId) {
+        const stored = localStorage.getItem('selectedCourse');
+        if (stored) {
+            try {
+                const data = JSON.parse(stored);
+                courseId = data.courseId;
+                shortName = data.shortName;
+            } catch (e) {
+                console.error('Invalid stored course data');
+            }
+        }
+    }
+
+    if (!courseId || !shortName) {
+        document.getElementById('weekSections').innerHTML =
+            '<div class="empty-msg" style="padding: 20px; text-align: center;">No course selected. <a href="/dashboard.html">Go back to dashboard</a></div>';
+        return;
+    }
+
+    // Fetch course details from API
+    try {
+        const response = await fetch(`/api/courses/${courseId}/detail?shortName=${encodeURIComponent(shortName)}`);
+        if (!response.ok) {
+            throw new Error('Failed to load course details');
+        }
+        courseData = await response.json();
+        populateHero(courseData);
+        buildWeeks(courseData);
+    } catch (e) {
+        console.error('Error loading course:', e);
+        document.getElementById('weekSections').innerHTML =
+            `<div class="empty-msg" style="padding: 20px; text-align: center; color: #e74c3c;">Error loading course: ${e.message}</div>`;
+    }
+}
+
+// Start initialization when page loads
+document.addEventListener('DOMContentLoaded', initCoursePage);

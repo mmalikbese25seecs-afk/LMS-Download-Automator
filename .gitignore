@@ -7,3 +7,4 @@
 /out/
 src/main/resources/credentials.json
 tokens/
+src/main/resources/application.properties

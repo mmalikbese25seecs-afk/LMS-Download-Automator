@@ -72,9 +72,23 @@ public class AuthController {
 
         } catch (Exception e) {
             System.out.println("[AuthController] Login failed: " + e.getMessage());
-            return ResponseEntity.status(401).body(
-                    Map.of("error", e.getMessage())
-            );
+
+            // Map internal exceptions to clean user-facing messages
+            String raw = e.getMessage() != null ? e.getMessage().toLowerCase() : "";
+            String userMessage;
+
+            if (raw.contains("invalid") || raw.contains("wrong") || raw.contains("incorrect")
+                    || raw.contains("token") || raw.contains("gettoken") || raw.contains("not logged")) {
+                userMessage = "Invalid username or password. Please try again.";
+            } else if (raw.contains("timeout") || raw.contains("connect")) {
+                userMessage = "Cannot reach the LMS server. Please check your connection.";
+            } else if (raw.contains("blocked") || raw.contains("locked")) {
+                userMessage = "Your account has been locked. Please contact your administrator.";
+            } else {
+                userMessage = "Login failed. Please check your credentials and try again.";
+            }
+
+            return ResponseEntity.status(401).body(Map.of("error", userMessage));
         }
     }
     //Clears the active session

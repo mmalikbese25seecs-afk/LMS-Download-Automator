@@ -13,119 +13,155 @@ import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.time.Duration;
 
-// Service to call Gemini api and summarize PDF text
 @Service
-
 public class GeminiSummarizerService implements Summarizable {
 
     @Value("${gemini.api.key:}")
     private String apiKey;
 
-    // Gemini API URL
-    private static final String GEMINI_URL ="https://generativelanguage.googleapis.com/v1beta/models/" +
-        "gemini-2.5-flash-lite:generateContent?key=";
+    private static final String GEMINI_URL =
+            "https://generativelanguage.googleapis.com/v1beta/models/" +
+                    "gemini-2.0-flash:generateContent?key=";
+
+    // Retry settings
+    private static final int    MAX_RETRIES   = 3;
+    private static final long[] RETRY_DELAYS  = { 5_000, 15_000, 30_000 }; // ms between retries
 
     private final HttpClient httpClient;
     private final ObjectMapper objectMapper;
 
-    // Constructor
     public GeminiSummarizerService() {
-        this.httpClient = HttpClient.newBuilder().connectTimeout(Duration.ofSeconds(15))  // timeout set
+        this.httpClient = HttpClient.newBuilder()
+                .connectTimeout(Duration.ofSeconds(15))
                 .build();
-
         this.objectMapper = new ObjectMapper();
     }
 
-    // check if api key exists or not
     public boolean isConfigured() {
         return apiKey != null && !apiKey.isBlank();
     }
 
-    // Send text to Gemini and get summary
+    // Original method for backward compatibility
     public String summarize(String extractedText, String fileName) throws Exception {
 
-        // if API key missing
         if (!isConfigured()) {
-            throw new Exception(
-                "Gemini API key not configured. Add gemini api key"
-            );
+            throw new Exception("Gemini API key not configured. Add gemini.api.key to application.properties");
         }
 
-        // limit text size so API doesn't break
-        String text= extractedText.length() > 12_000? extractedText.substring(0, 12_000) + "\n[shortened]"
+        // Limit text size
+        String text = extractedText.length() > 12_000
+                ? extractedText.substring(0, 12_000) + "\n[text shortened]"
                 : extractedText;
 
-        // JSON body for request
+        String promptText = buildDefaultPrompt(text, fileName);
+        return callGeminiAPI(promptText);
+    }
+
+    // New method that accepts a full prompt
+    public String summarizeWithPrompt(String fullPrompt) throws Exception {
+
+        if (!isConfigured()) {
+            throw new Exception("Gemini API key not configured. Add gemini.api.key to application.properties");
+        }
+
+        // Limit prompt size
+        String prompt = fullPrompt.length() > 20_000
+                ? fullPrompt.substring(0, 20_000) + "\n[text shortened]"
+                : fullPrompt;
+
+        return callGeminiAPI(prompt);
+    }
+
+    // Internal method to call Gemini API
+    private String callGeminiAPI(String promptText) throws Exception {
 
         ObjectNode body = objectMapper.createObjectNode();
         ArrayNode contents = body.putArray("contents");
         ObjectNode content = contents.addObject();
-        content.putArray("parts").addObject().put("text", buildPrompt(text, fileName));
+        ObjectNode part = content.putArray("parts").addObject();
+        part.put("text", promptText);
 
-        // config settings for Gemini
         ObjectNode genCfg = body.putObject("generationConfig");
-
-        // low temperature to make summary more factual
-
         genCfg.put("temperature", 0.3);
         genCfg.put("maxOutputTokens", 1024);
 
-        // Building http Request
+        String requestBody = objectMapper.writeValueAsString(body);
 
         HttpRequest request = HttpRequest.newBuilder()
                 .uri(URI.create(GEMINI_URL + apiKey))
                 .header("Content-Type", "application/json")
-                .POST(HttpRequest.BodyPublishers.ofString(objectMapper.writeValueAsString(body)))
-                .timeout(Duration.ofSeconds(30))
+                .POST(HttpRequest.BodyPublishers.ofString(requestBody))
+                .timeout(Duration.ofSeconds(60))
                 .build();
 
-        System.out.println("Calling gemini for : " + fileName);
+        System.out.println("[GeminiSummarizerService] Calling Gemini API");
 
-        // sending request
-        HttpResponse<String> response = httpClient.send(
-                request, HttpResponse.BodyHandlers.ofString()
-        );
+        // Retry loop — handles 429 rate limit automatically
+        HttpResponse<String> response = null;
+        for (int attempt = 0; attempt <= MAX_RETRIES; attempt++) {
 
-        System.out.println("Status : " + response.statusCode());
+            response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+            System.out.println("[GeminiSummarizerService] Response status (attempt " + (attempt + 1) + "): " + response.statusCode());
 
-        // Error handling
+            if (response.statusCode() == 429) {
+                if (attempt < MAX_RETRIES) {
+                    long delay = RETRY_DELAYS[attempt];
+                    System.out.println("[GeminiSummarizerService] Rate limit hit. Retrying in " + (delay / 1000) + "s...");
+                    Thread.sleep(delay);
+                    continue; // retry
+                } else {
+                    throw new Exception("Rate limit hit after " + MAX_RETRIES + " retries. Please wait a minute and try again.");
+                }
+            }
 
-        if (response.statusCode() == 429)
+            break; // success or non-429 error — stop retrying
+        }
 
-            throw new Exception("Rate limit hit, try later");
-        if (response.statusCode() != 200)
-            throw new Exception("Rrror from gemini : " + response.statusCode());
+        if (response.statusCode() == 400) {
+            JsonNode errRoot = objectMapper.readTree(response.body());
+            String errMsg = errRoot.path("error").path("message").asText("Bad request");
+            throw new Exception("Gemini rejected the request: " + errMsg);
+        }
+
+        if (response.statusCode() != 200) {
+            System.err.println("[GeminiSummarizerService] Error response: " + response.body());
+            throw new Exception("Error from Gemini: " + response.statusCode());
+        }
 
         return parseResponse(response.body());
     }
 
-    // Prompt for Gemini
+    private String buildDefaultPrompt(String text, String fileName) {
+        String safeName = fileName != null
+                ? fileName.replaceAll("[\"'\\\\]", "")
+                : "document";
 
-    private String buildPrompt(String text, String fileName) {
-        return "Summarize the document '" + fileName + "' like this:\n\n" +
-               "Key Topics\n" +
-               "Core Concepts\n" +
-               "Key Takeaways\n" +
-               "Overview\n\n" +
-               "Be simple and clear.\n\n" +
-               "DOCUMENT:\n" + text;
+        return "You are a helpful study assistant. Summarize the document '" + safeName + "' using these sections:\n\n" +
+                "**Key Topics** — What main subjects does this cover?\n" +
+                "**Core Concepts** — What are the key ideas explained?\n" +
+                "**Key Takeaways** — What should the reader remember?\n" +
+                "**Overview** — A brief 2-3 sentence summary.\n\n" +
+                "Be concise, clear, and student-friendly.\n\n" +
+                "DOCUMENT TEXT:\n" + text;
     }
-
-    // Reads response JSON and extract text
 
     private String parseResponse(String responseBody) throws Exception {
         JsonNode root = objectMapper.readTree(responseBody);
 
-        // if API gives error
-        if (root.has("error"))
-            throw new Exception("gemini error: " + root.get("error").get("message").asText());
+        if (root.has("error")) {
+            throw new Exception("Gemini error: " + root.get("error").get("message").asText());
+        }
 
         try {
-            return root.get("candidates").get(0)
-                       .get("content").get("parts").get(0)
-                       .get("text").asText();
+            String summary = root.get("candidates").get(0)
+                    .get("content").get("parts").get(0)
+                    .get("text").asText();
+            System.out.println("[GeminiSummarizerService] Successfully parsed response");
+            return summary;
         } catch (Exception e) {
-            throw new Exception("failed to parse response");
+            System.err.println("[GeminiSummarizerService] Failed to parse response: " + e.getMessage());
+            throw new Exception("Failed to parse Gemini response. Raw: " +
+                    responseBody.substring(0, Math.min(200, responseBody.length())));
         }
     }
 }

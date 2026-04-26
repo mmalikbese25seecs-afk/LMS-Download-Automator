@@ -1,44 +1,40 @@
 package com.downloadc.downloadc.model;
 
-// Stores the result after summarizing a PDF file
-// It contains basic info of file name,pages, preview text and summary
-
 public class SummaryResult {
 
-    // File details
     private final String fileName;
     private final int pageCount;
-
-    // Content data
-    private final String extractedText;  // text preview
+    private final String extractedText;
     private final String summary;
+    private final String fullText;
 
-    // Constructor
+    // Used by PdfSummarizerService (local summarizer)
+    // Full constructor with 5 parameters
     public SummaryResult(String fileName, int pageCount,
-                         String extractedText, String summary) {
-
+                         String fullText, String extractedText, String summary) {
         this.fileName = fileName;
         this.pageCount = pageCount;
+        this.fullText = fullText;
         this.extractedText = extractedText;
         this.summary = summary;
     }
 
-    // GETTERS
-
-    public String getFileName() {
-        return fileName;
+    // Used by SummarizerController (Gemini path)
+    // 4 parameter constructor
+    public SummaryResult(String fileName, int pageCount,
+                         String fullText, String summary) {
+        this.fileName = fileName;
+        this.pageCount = pageCount;
+        this.fullText = fullText;
+        this.extractedText = fullText.length() > 500
+                ? fullText.substring(0, 500) + "..."
+                : fullText;
+        this.summary = summary;
     }
 
-    public int getPageCount() {
-        return pageCount;
-    }
-
-    public String getExtractedText() {
-        return extractedText;
-    }
-
-    public String getSummary() {
-        return summary;
-    }
-
+    public String getFileName()      { return fileName; }
+    public int getPageCount()        { return pageCount; }
+    public String getExtractedText() { return extractedText; }
+    public String getFullText()      { return fullText; }
+    public String getSummary()       { return summary; }
 }
