@@ -137,8 +137,8 @@
         .course-panel{
             display:none;border-top:1px solid var(--border);background:rgba(0,0,0,.15)
         }.course-panel.open{
-                     display:block
-                 }
+             display:block
+         }
         .week-tabs{
             display:flex;overflow-x:auto;border-bottom:1px solid var(--border);padding:0 16px;scrollbar-width:thin
         }
@@ -223,13 +223,18 @@
         }
         .drive-dot{
             width:8px;height:8px;border-radius:50%;flex-shrink:0}.drive-dot.on{background:var(--green);box-shadow:0 0 6px var(--green)}.drive-dot.off{background:var(--muted)}.drive-dot.nc{background:var(--orange)
-                                                                                                                                                                                      }
+                                                                                                                                                                              }
         .changes-bar{
             background:rgba(245,158,11,.08);border:1px solid rgba(245,158,11,.28);border-radius:10px;padding:11px 18px;display:flex;align-items:center;gap:10px;flex-wrap:wrap;font-size:.84rem
         }
         .deadline-item{
-            padding:12px 18px;border-bottom:1px solid var(--border);display:flex;gap:10px;align-items:flex-start}.deadline-item:last-child{border-bottom:none
-                                                                                                                         }
+            padding:12px 18px;
+            border-bottom:1px solid var(--border);
+            display:flex;gap:10px;
+            align-items:flex-start
+        }.deadline-item:last-child{
+                     border-bottom:none
+                                                                                                                 }
         .dl-dot{
             width:9px;height:9px;border-radius:50%;margin-top:5px;flex-shrink:0
         }
@@ -319,8 +324,22 @@
             padding:18px;text-align:center;color:var(--muted);font-size:.82rem
         }
         .toast-custom{
-            position:fixed;bottom:24px;right:24px;background:var(--card);border:1px solid var(--border);border-radius:10px;padding:13px 18px;font-size:.85rem;color:#dde1f0;max-width:340px;z-index:9999;opacity:0;transform:translateY(10px);transition:all .25s;pointer-events:none;font-family:var(--font)}.toast-custom.show{opacity:1;transform:translateY(0)
-                                                                                                                                                                                                                                                                                                                      }
+            position:fixed;
+            bottom:24px;right:24px;
+            background:var(--card);
+            border:1px solid var(--border);
+            border-radius:10px;
+            padding:13px 18px;font-size:.85rem;
+            color:#dde1f0;
+            max-width:340px;
+            z-index:9999;
+            opacity:0;
+            transform:translateY(10px);
+            transition:all .25s;pointer-events:none;
+            font-family:var(--font)
+        }.toast-custom.show{
+                     opacity:1;transform:translateY(0)
+                 }
         .icon-pdf{
             background:rgba(231,76,60,.15);color:#e74c3c
         }
@@ -345,7 +364,7 @@
         @media(max-width:768px){
             .topnav .nav-links{display:none
             }.page-wrap{padding:16px 12px
-                         }
+             }
         }
     </style>
 </head>
@@ -449,7 +468,7 @@
     document.addEventListener('DOMContentLoaded',async()=>{
         try{
             const r=await fetch('/api/auth/status');if(!(await r.json()).loggedIn){window.location.href='/index.html';return;
-        }
+            }
         }catch{
             window.location.href='/index.html';return;
         }
@@ -498,8 +517,8 @@
             uc>0?`<div class="urgent-banner mb-3"><i class="bi bi-exclamation-triangle-fill fs-5"></i><span>You have <strong>${
                 uc
             }</strong> deadline${
-        uc>1?'s':''
-    } due within 3 days.</span><a href="/calendar.html" class="ms-auto text-decoration-underline" style="color:inherit;white-space:nowrap">View →</a></div>`:''
+                uc>1?'s':''
+            } due within 3 days.</span><a href="/calendar.html" class="ms-auto text-decoration-underline" style="color:inherit;white-space:nowrap">View →</a></div>`:''
         }
     <div id="changesBar" class="mb-3">${
             lc?`<div class="changes-bar"><i class="bi bi-broadcast" style="color:var(--yellow)"></i><span style="flex:1;font-size:.83rem">Last LMS check: <strong>${
@@ -688,16 +707,16 @@
         })</div>`;
         s.weeks.forEach((w,i)=>{
             const hf=w.files&&w.files.length>0;tabs+=`<div class="week-tab${
-            hf?' has-files':''
-        }" onclick="swTab(${
-            id
-        },'${
-            safe(sn)
-        }',${
-            i
-        },this)">${
-            safe(w.sectionName||w.dateRange||'Week '+w.sectionNumber)
-        }</div>`;
+                hf?' has-files':''
+            }" onclick="swTab(${
+                id
+            },'${
+                safe(sn)
+            }',${
+                i
+            },this)">${
+                safe(w.sectionName||w.dateRange||'Week '+w.sectionNumber)
+            }</div>`;
         });
         p.innerHTML=`
     <div class="panel-toolbar">
@@ -817,8 +836,8 @@
     }
     function clrSel(id){
         document.querySelectorAll(`#fl-${
-        id
-    } .file-checkbox`).forEach(c=>c.checked=false);onCbk(id);
+            id
+        } .file-checkbox`).forEach(c=>c.checked=false);onCbk(id);
     }
     async function dlSel(id,sn){
         const n=document.querySelectorAll(`#fl-${
@@ -835,11 +854,14 @@
         saveTarget={
             id,sn,type
         };saveOpt='device';selectSaveOpt('device');
-        document.getElementById('saveModalLabel').textContent={course:`Download all files — ${sn}`,all:`Download all files — ${
+        document.getElementById('saveModalLabel').textContent={
+            course:`Download all files — ${
             sn
-        }`,week:`Download this week — ${
-            sn
-        }`
+        }`,all:`Download all files — ${
+                sn
+            }`,week:`Download this week — ${
+                sn
+            }`
         }[type]||sn;
         ['opt-drive','opt-both'].forEach(k=>{const el=document.getElementById(k);if(el)el.style.display=driveStatus.authorized?'flex':'none';
         });
@@ -861,7 +883,7 @@
         if((saveOpt==='drive'||saveOpt==='both')&&driveStatus.authorized)await upDrive(sn,id);
     }
 
-    // ── Download helpers ───────────────────────────────────────────────────────
+    // Download helpers
     async function doCourse(id,sn){
         const btn=document.getElementById('dlbtn-'+id)||document.getElementById('dlall-'+id);
         if(btn){
@@ -893,13 +915,13 @@
                 }: `+p.join(', ')+'.');
             }else{
                 if(btn){
-                btn.disabled=false;btn.innerHTML='<i class="bi bi-download"></i> Download';
+                    btn.disabled=false;btn.innerHTML='<i class="bi bi-download"></i> Download';
                 }showToast(d.error||'Download failed.',true);
             }
         }catch(e){
             if(btn){
-            btn.disabled=false;btn.innerHTML='<i class="bi bi-download"></i> Download';
-        }showToast(e.message,true);
+                btn.disabled=false;btn.innerHTML='<i class="bi bi-download"></i> Download';
+            }showToast(e.message,true);
         }
     }
     async function dlWeek(id,sn){
@@ -912,12 +934,12 @@
             if(r.ok){if(btn){btn.classList.add('success');btn.innerHTML=`<i class="bi bi-check-lg me-1"></i>Done (${d.downloaded})`;}showToast(`Week: ${d.downloaded} new, ${d.skipped||0} unchanged.`);}
             else{
                 if(btn){
-                btn.disabled=false;btn.innerHTML='<i class="bi bi-download me-1"></i>This Week';
-            }showToast(d.error||'Failed.',true);
+                    btn.disabled=false;btn.innerHTML='<i class="bi bi-download me-1"></i>This Week';
+                }showToast(d.error||'Failed.',true);
             }
         }catch(e) {
             if(btn){btn.disabled=false;btn.innerHTML='<i class="bi bi-download me-1"></i>This Week';
-        }showToast(e.message,true);
+            }showToast(e.message,true);
         }
     }
     async function dlLatest(id,sn){
@@ -944,8 +966,8 @@
         }
         finally{
             if(btn){
-            btn.disabled=false;btn.innerHTML='<i class="bi bi-arrow-repeat me-1"></i>Sync Now';
-        }
+                btn.disabled=false;btn.innerHTML='<i class="bi bi-arrow-repeat me-1"></i>Sync Now';
+            }
         }
     }
 
@@ -1053,9 +1075,28 @@
 
     // Utilities
     function fIcon(ext){
-        const m={pdf:'icon-pdf',pptx:'icon-pptx',ppt:'icon-pptx',docx:'icon-docx',doc:'icon-docx',zip:'icon-zip',rar:'icon-zip',mp4:'icon-mp4',xlsx:'icon-xlsx',xls:'icon-xlsx'
-        };const e={
-            pdf:'📄',pptx:'📊',ppt:'📊',docx:'📝',doc:'📝',zip:'🗜',rar:'🗜',mp4:'🎬',xlsx:'📈',xls:'📈'
+        const m={pdf:'icon-pdf',
+            pptx:'icon-pptx',
+            ppt:'icon-pptx',
+            docx:'icon-docx',
+            doc:'icon-docx',
+            zip:'icon-zip',
+            rar:'icon-zip',
+            mp4:'icon-mp4',
+            xlsx:'icon-xlsx',
+            xls:'icon-xlsx'
+        };
+        const e={
+            pdf:'📄',
+            pptx:'📊',
+            ppt:'📊',
+            docx:'📝',
+            doc:'📝',
+            zip:'🗜',
+            rar:'🗜',
+            mp4:'🎬',
+            xlsx:'📈',
+            xls:'📈'
         };return{
             cls:m[ext]||'icon-file',em:e[ext]||'📎'
         };
@@ -1070,7 +1111,9 @@
         if(!s)return'';return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
     }
     function showErr(m){
-        document.getElementById('pageContent').innerHTML=`<div class="center-screen"><i class="bi bi-exclamation-circle" style="font-size:2rem;color:var(--red)"></i><p style="color:var(--red)">${safe(m)}</p><button class="btn-sm-act primary" onclick="location.reload()">Retry</button></div>`;
+        document.getElementById('pageContent').innerHTML=`<div class="center-screen"><i class="bi bi-exclamation-circle" style="font-size:2rem;color:var(--red)"></i><p style="color:var(--red)">${
+            safe(m)
+        }</p><button class="btn-sm-act primary" onclick="location.reload()">Retry</button></div>`;
     }
     let _t;function showToast(m,e=false){
         const el=document.getElementById('toast');el.textContent=m;el.style.borderColor=e?'var(--red)':'var(--border)';el.classList.add('show');clearTimeout(_t);_t=setTimeout(()=>el.classList.remove('show'),3800);
