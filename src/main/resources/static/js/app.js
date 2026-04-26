@@ -26,10 +26,8 @@ async function handleLogin() {
     const username = document.getElementById('username').value.trim();
     const password = document.getElementById('password').value.trim();
 
-    // Clear previous error
     showError('');
 
-    // Basic validation
     if (!username || !password) {
         showError('Please enter both username and password.');
         return;
@@ -42,14 +40,21 @@ async function handleLogin() {
             body: JSON.stringify({ username, password })
         });
 
+        const data = await res.json(); // ✅ IMPORTANT
+
         if (!res.ok) {
-            const err = await res.json();
-            showError(err.error || 'Login failed. Check your credentials.');
+            showError(data.error || 'Login failed. Check your credentials.');
             return;
         }
 
-        // Success → go to calendar page
-        window.location.href = 'calendar.html';
+        // ✅ STORE USER DATA
+        localStorage.setItem('lmsUser', JSON.stringify({
+            fullName: data.fullName,
+            userId: data.userId
+        }));
+
+        // ✅ Redirect to dashboard (NOT calendar)
+        window.location.href = 'dashboard.html';
 
     } catch (e) {
         showError('Cannot reach server. Is the backend running?');
@@ -63,3 +68,10 @@ function showError(message) {
     div.textContent = message;
     div.style.display = message ? 'block' : 'none';
 }
+
+// - Press Enter to Login -
+document.addEventListener('keypress', function (e) {
+    if (e.key === 'Enter') {
+        handleLogin();
+    }
+});
