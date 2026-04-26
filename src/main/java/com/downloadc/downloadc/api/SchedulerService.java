@@ -4,7 +4,6 @@ import com.downloadc.downloadc.config.SessionManager;
 import com.downloadc.downloadc.downloader.FileDownloader;
 import com.downloadc.downloadc.model.Course;
 import com.downloadc.downloadc.model.CourseFile;
-import com.downloadc.downloadc.model.DownloadStatus;
 import com.downloadc.downloadc.model.MoodleConfig;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
@@ -22,7 +21,8 @@ import java.util.List;
 
 // handles auto sync stuff, runs on a schedule
 // modes: manual (default), daily, weekly
-// if driveAutoSync is on, uploads to google drive after sync
+// driveAutoSync flag is saved but actual Drive upload must be
+// triggered manually by the user from the frontend (requires user session)
 
 @Service
 public class SchedulerService {
@@ -34,7 +34,9 @@ public class SchedulerService {
     @Autowired private SessionManager sessionManager;
     @Autowired private DownloadHistoryService historyService;
     @Autowired private ChangeDetectionService changeService;
-    @Autowired private GoogleDriveService driveService;
+
+    // Drive upload requires a user session which the scheduler doesn't have.
+    // After sync completes, user can manually trigger Drive upload from frontend.
 
     private final ObjectMapper objectMapper = new ObjectMapper()
             .enable(SerializationFeature.INDENT_OUTPUT);
@@ -43,7 +45,7 @@ public class SchedulerService {
     public static class ScheduleConfig {
         public String  mode          = "manual";  // manual | daily | weekly
         public int     hourOfDay     = 2;          // what hour to run (0-23)
-        public boolean driveAutoSync = false;      // upload to drive after sync?
+        public boolean driveAutoSync = false;      // reminder flag for frontend
         public String  lastRunAt     = "";         // when did it last run
         public String  lastRunResult = "";         // what happened last time
     }
@@ -104,7 +106,6 @@ public class SchedulerService {
                 List<CourseFile> files = fs.getFilesForCourse(course);
                 for (CourseFile file : files) {
                     try {
-                        // count result of each file download
                         switch (dl.download(file)) {
                             case DOWNLOADED -> downloaded++;
                             case UPDATED    -> updated++;
@@ -119,16 +120,12 @@ public class SchedulerService {
                     }
                 }
 
-                // upload to drive if enabled and something was downloaded
-                if (cfg.driveAutoSync && driveService.isAuthorized()
-                        && (downloaded > 0 || updated > 0)) {
-                    try {
-                        driveService.uploadCourse(course.getShortName());
-                        System.out.println("[Scheduler] Drive synced: " + course.getShortName());
-                    } catch (Exception e) {
-                        System.err.println("[Scheduler] Drive sync failed for "
-                                + course.getShortName() + ": " + e.getMessage());
-                    }
+                // Drive auto-sync skipped here — no user session available
+                // User can upload to Drive manually from the frontend after sync
+                if (cfg.driveAutoSync && (downloaded > 0 || updated > 0)) {
+                    System.out.println("[Scheduler] Drive auto-sync for "
+                            + course.getShortName()
+                            + " — please trigger manually from dashboard.");
                 }
             }
 

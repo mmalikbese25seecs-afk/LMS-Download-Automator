@@ -1,16 +1,15 @@
 package com.downloadc.downloadc.api;
 
-import com.google.api.client.auth.oauth2.Credential;
-import com.google.api.client.extensions.java6.auth.oauth2.AuthorizationCodeInstalledApp;
-import com.google.api.client.extensions.jetty.auth.oauth2.LocalServerReceiver;
+import com.google.api.client.auth.oauth2.TokenResponse;
 import com.google.api.client.googleapis.auth.oauth2.GoogleAuthorizationCodeFlow;
+import com.google.api.client.googleapis.auth.oauth2.GoogleAuthorizationCodeTokenRequest;
 import com.google.api.client.googleapis.auth.oauth2.GoogleClientSecrets;
+import com.google.api.client.googleapis.auth.oauth2.GoogleCredential;
 import com.google.api.client.googleapis.javanet.GoogleNetHttpTransport;
 import com.google.api.client.http.FileContent;
 import com.google.api.client.http.javanet.NetHttpTransport;
 import com.google.api.client.json.JsonFactory;
 import com.google.api.client.json.gson.GsonFactory;
-import com.google.api.client.util.store.FileDataStoreFactory;
 import com.google.api.services.drive.Drive;
 import com.google.api.services.drive.DriveScopes;
 import com.google.api.services.drive.model.File;
@@ -23,121 +22,108 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 
-// handles everything Google Drive related: uploading, listing, auth
-// setup: get credentials.json from Google Cloud console and drop it in resources/
+// Handles Google Drive: OAuth URL generation, callback handling,
+// uploading files per user using their own Google account
 @Service
 public class GoogleDriveService {
 
-    private static final JsonFactory JSON_FACTORY = GsonFactory.getDefaultInstance();
-    private static final List<String> SCOPES = Collections.singletonList(DriveScopes.DRIVE_FILE);
-    private static final String APP_NAME = "LMS Download Automator";
-
-    // all lms files go inside this folder in the user's drive
-    private static final String ROOT_FOLDER_NAME = "LMS Downloads";
+    private static final JsonFactory JSON_FACTORY   = GsonFactory.getDefaultInstance();
+    private static final List<String> SCOPES        = Collections.singletonList(DriveScopes.DRIVE_FILE);
+    private static final String APP_NAME            = "LMS Download Automator";
+    private static final String ROOT_FOLDER_NAME    = "LMS Downloads";
+    private static final String REDIRECT_URI        = "http://localhost:8080/api/drive/callback";
 
     @Value("${google.drive.credentials.path:src/main/resources/credentials.json}")
     private String credentialsPath;
 
-    @Value("${google.drive.tokens.dir:tokens}")
-    private String tokensDir;
+    // stores access tokens per session user (sessionId → credential)
+    private final Map<String, GoogleCredential> userCredentials = new ConcurrentHashMap<>();
 
-    // cache course name: folder id, so we don't keep making duplicate folders
-    private final Map<String, String> folderIdCache = new HashMap<>();
+    // stores folder id caches per user
+    private final Map<String, String>           rootFolderIds   = new ConcurrentHashMap<>();
+    private final Map<String, Map<String,String>> folderCaches  = new ConcurrentHashMap<>();
 
-    // root "LMS Downloads" folder id, null until first use
-    private String rootFolderId = null;
-
-    // returns true if credentials.json exists, used to show/hide drive button on frontend
+    // Public API:
+    // true if credentials.json is present
     public boolean isConfigured() {
         return new java.io.File(credentialsPath).exists();
     }
 
-    // returns true if user has already authorized (token saved in tokens/ folder)
-    public boolean isAuthorized() {
-        if (!isConfigured()) return false;
-        java.io.File tokenDir = new java.io.File(tokensDir);
-        return tokenDir.exists() && tokenDir.listFiles() != null
-                && Objects.requireNonNull(tokenDir.listFiles()).length > 0;
+    // true if this session has a valid token
+    public boolean isAuthorized(String sessionId) {
+        return userCredentials.containsKey(sessionId);
     }
 
-    // triggers oauth flow, opens browser on first run, silent after that
-    public String authorize() throws Exception {
-        Drive drive = buildDriveService();
-        drive.about().get().setFields("user").execute(); // quick test call to verify token works
-        return "Google Drive connected successfully.";
+    // generates the Google OAuth URL the frontend should redirect the user to
+    public String getAuthUrl(String sessionId) throws Exception {
+        GoogleAuthorizationCodeFlow flow = buildFlow();
+        return flow.newAuthorizationUrl()
+                .setRedirectUri(REDIRECT_URI)
+                .setState(sessionId)          // we get sessionId back in callback
+                .setAccessType("offline")
+                .build();
     }
 
-    // deletes saved tokens so user can re-auth with a different account
-    public void disconnect() {
-        java.io.File tokenDir = new java.io.File(tokensDir);
-        if (tokenDir.exists()) {
-            for (java.io.File f : Objects.requireNonNull(tokenDir.listFiles())) {
-                f.delete();
-            }
-        }
-        rootFolderId = null;
-        folderIdCache.clear();
-        System.out.println("[GoogleDriveService] Disconnected. Tokens cleared.");
+    // called by the callback endpoint after Google redirects back with a code
+    public void handleCallback(String code, String sessionId) throws Exception {
+        GoogleClientSecrets secrets  = loadSecrets();
+        NetHttpTransport    transport = GoogleNetHttpTransport.newTrustedTransport();
+
+        TokenResponse tokenResponse = new GoogleAuthorizationCodeTokenRequest(
+                transport,
+                JSON_FACTORY,
+                secrets.getDetails().getClientId(),
+                secrets.getDetails().getClientSecret(),
+                code,
+                REDIRECT_URI
+        ).execute();
+
+        GoogleCredential credential = new GoogleCredential.Builder()
+                .setTransport(transport)
+                .setJsonFactory(JSON_FACTORY)
+                .setClientSecrets(
+                        secrets.getDetails().getClientId(),
+                        secrets.getDetails().getClientSecret())
+                .build()
+                .setAccessToken(tokenResponse.getAccessToken())
+                .setRefreshToken(tokenResponse.getRefreshToken());
+
+        userCredentials.put(sessionId, credential);
+        System.out.println("[GoogleDriveService] Token saved for session: " + sessionId);
     }
 
-    // uploads a single file into LMS Downloads/{courseName}/ in drive
-    public String uploadFile(String localFilePath, String courseName) throws Exception {
-
-        Drive drive = buildDriveService();
-
-        java.io.File localFile = new java.io.File(localFilePath);
-        if (!localFile.exists()) {
-            throw new IOException("Local file not found: " + localFilePath);
-        }
-
-        String rootId = getOrCreateRootFolder(drive);
-        String courseFolderId = getOrCreateCourseFolder(drive, rootId, courseName);
-
-        String mimeType = Files.probeContentType(localFile.toPath());
-        if (mimeType == null) mimeType = "application/octet-stream";
-
-        File fileMeta = new File();
-        fileMeta.setName(localFile.getName());
-        fileMeta.setParents(Collections.singletonList(courseFolderId));
-
-        FileContent content = new FileContent(mimeType, localFile);
-        File uploaded = drive.files().create(fileMeta, content)
-                .setFields("id, name, webViewLink")
-                .execute();
-
-        System.out.println("[GoogleDriveService] Uploaded: " + uploaded.getName()
-                + " → " + uploaded.getWebViewLink());
-
-        return uploaded.getId();
+    // clears token for this session
+    public void disconnect(String sessionId) {
+        userCredentials.remove(sessionId);
+        rootFolderIds.remove(sessionId);
+        folderCaches.remove(sessionId);
+        System.out.println("[GoogleDriveService] Disconnected session: " + sessionId);
     }
 
-    // uploads all files from downloads/{courseName}/ to drive, skips duplicates
-    public UploadResult uploadCourse(String courseName) throws Exception {
+    // uploads all files from downloads/{courseName}/ to user's Drive
+    public UploadResult uploadCourse(String sessionId, String courseName) throws Exception {
 
-        Drive drive = buildDriveService();
-        String rootId = getOrCreateRootFolder(drive);
-        String courseFolderId = getOrCreateCourseFolder(drive, rootId, courseName);
-
-        // grab existing file names in drive so we can skip dupes
-        Set<String> existingNames = listFileNamesInFolder(drive, courseFolderId);
+        Drive  drive          = buildDriveForSession(sessionId);
+        String rootId         = getOrCreateRootFolder(drive, sessionId);
+        String courseFolderId = getOrCreateCourseFolder(drive, sessionId, rootId, courseName);
+        Set<String> existing  = listFileNamesInFolder(drive, courseFolderId);
 
         Path courseDir = Paths.get("downloads", sanitize(courseName));
-        if (!Files.exists(courseDir)) {
-            throw new IOException("No local downloads found for course: " + courseName);
-        }
+        if (!Files.exists(courseDir))
+            throw new IOException("No local downloads found for: " + courseName);
 
         int uploaded = 0, skipped = 0, failed = 0;
 
         try (var stream = Files.list(courseDir)) {
             for (Path filePath : stream.toList()) {
-
                 if (!Files.isRegularFile(filePath)) continue;
 
                 String fileName = filePath.getFileName().toString();
 
-                if (existingNames.contains(fileName)) {
-                    System.out.println("[GoogleDriveService] Skipped (already in Drive): " + fileName);
+                if (existing.contains(fileName)) {
+                    System.out.println("[Drive] Skipped (already in Drive): " + fileName);
                     skipped++;
                     continue;
                 }
@@ -153,11 +139,11 @@ public class GoogleDriveService {
                     FileContent content = new FileContent(mimeType, filePath.toFile());
                     drive.files().create(fileMeta, content).setFields("id").execute();
 
-                    System.out.println("[GoogleDriveService] Uploaded: " + fileName);
+                    System.out.println("[Drive] Uploaded: " + fileName);
                     uploaded++;
 
                 } catch (Exception e) {
-                    System.err.println("[GoogleDriveService] Failed: " + fileName + " — " + e.getMessage());
+                    System.err.println("[Drive] Failed: " + fileName + " — " + e.getMessage());
                     failed++;
                 }
             }
@@ -166,12 +152,11 @@ public class GoogleDriveService {
         return new UploadResult(courseName, uploaded, skipped, failed);
     }
 
-    // lists all files inside LMS Downloads/{courseName}/ in drive
-    public List<DriveFileInfo> listCourseFiles(String courseName) throws Exception {
-
-        Drive drive = buildDriveService();
-        String rootId = getOrCreateRootFolder(drive);
-        String courseFolderId = getOrCreateCourseFolder(drive, rootId, courseName);
+    // lists files in user's Drive course folder
+    public List<DriveFileInfo> listCourseFiles(String sessionId, String courseName) throws Exception {
+        Drive  drive          = buildDriveForSession(sessionId);
+        String rootId         = getOrCreateRootFolder(drive, sessionId);
+        String courseFolderId = getOrCreateCourseFolder(drive, sessionId, rootId, courseName);
 
         FileList result = drive.files().list()
                 .setQ("'" + courseFolderId + "' in parents and trashed = false")
@@ -189,113 +174,104 @@ public class GoogleDriveService {
         return files;
     }
 
-    private Drive buildDriveService() throws Exception {
-        final NetHttpTransport transport = GoogleNetHttpTransport.newTrustedTransport();
-        Credential credential = getCredentials(transport);
+    // ─── Private helpers ──────────────────────────────────────────────────────
+
+    private Drive buildDriveForSession(String sessionId) throws Exception {
+        GoogleCredential credential = userCredentials.get(sessionId);
+        if (credential == null)
+            throw new IllegalStateException("Drive not connected. Please authorize first.");
+
+        NetHttpTransport transport = GoogleNetHttpTransport.newTrustedTransport();
         return new Drive.Builder(transport, JSON_FACTORY, credential)
                 .setApplicationName(APP_NAME)
                 .build();
     }
 
-    private Credential getCredentials(NetHttpTransport transport) throws Exception {
-
-        java.io.File credFile = new java.io.File(credentialsPath);
-        if (!credFile.exists()) {
-            throw new FileNotFoundException(
-                    "credentials.json not found at: " + credentialsPath
-                            + "\nDownload it from Google Cloud Console → APIs & Services → Credentials."
-            );
-        }
-
-        GoogleClientSecrets secrets = GoogleClientSecrets.load(JSON_FACTORY, new FileReader(credFile));
-
-        GoogleAuthorizationCodeFlow flow = new GoogleAuthorizationCodeFlow.Builder(
-                transport, JSON_FACTORY, secrets, SCOPES)
-                .setDataStoreFactory(new FileDataStoreFactory(new java.io.File(tokensDir)))
+    private GoogleAuthorizationCodeFlow buildFlow() throws Exception {
+        NetHttpTransport transport = GoogleNetHttpTransport.newTrustedTransport();
+        return new GoogleAuthorizationCodeFlow.Builder(
+                transport, JSON_FACTORY, loadSecrets(), SCOPES)
                 .setAccessType("offline")
                 .build();
-
-        // localhost:8888 catches the oauth redirect
-        LocalServerReceiver receiver = new LocalServerReceiver.Builder().setPort(8888).build();
-
-        return new AuthorizationCodeInstalledApp(flow, receiver).authorize("user");
     }
 
-    // finds or creates the "LMS Downloads" root folder in drive
-    private String getOrCreateRootFolder(Drive drive) throws Exception {
-        if (rootFolderId != null) return rootFolderId;
+    private GoogleClientSecrets loadSecrets() throws Exception {
+        java.io.File credFile = new java.io.File(credentialsPath);
+        if (!credFile.exists())
+            throw new FileNotFoundException(
+                    "credentials.json not found at: " + credentialsPath);
+        return GoogleClientSecrets.load(JSON_FACTORY, new FileReader(credFile));
+    }
+
+    private String getOrCreateRootFolder(Drive drive, String sessionId) throws Exception {
+        if (rootFolderIds.containsKey(sessionId))
+            return rootFolderIds.get(sessionId);
 
         FileList existing = drive.files().list()
                 .setQ("name = '" + ROOT_FOLDER_NAME + "' "
                         + "and mimeType = 'application/vnd.google-apps.folder' "
                         + "and trashed = false")
-                .setFields("files(id)")
-                .execute();
+                .setFields("files(id)").execute();
 
+        String id;
         if (!existing.getFiles().isEmpty()) {
-            rootFolderId = existing.getFiles().get(0).getId();
-            return rootFolderId;
+            id = existing.getFiles().get(0).getId();
+        } else {
+            File meta = new File();
+            meta.setName(ROOT_FOLDER_NAME);
+            meta.setMimeType("application/vnd.google-apps.folder");
+            id = drive.files().create(meta).setFields("id").execute().getId();
+            System.out.println("[Drive] Created root folder: " + ROOT_FOLDER_NAME);
         }
 
-        File meta = new File();
-        meta.setName(ROOT_FOLDER_NAME);
-        meta.setMimeType("application/vnd.google-apps.folder");
-
-        rootFolderId = drive.files().create(meta).setFields("id").execute().getId();
-        System.out.println("[GoogleDriveService] Created root folder: " + ROOT_FOLDER_NAME);
-        return rootFolderId;
+        rootFolderIds.put(sessionId, id);
+        return id;
     }
 
-    // finds or creates a course subfolder inside the root, caches the id
-    private String getOrCreateCourseFolder(Drive drive, String rootId, String courseName) throws Exception {
-
-        String safe = sanitize(courseName);
-        if (folderIdCache.containsKey(safe)) return folderIdCache.get(safe);
+    private String getOrCreateCourseFolder(Drive drive, String sessionId,
+                                           String rootId, String courseName) throws Exception {
+        String safe  = sanitize(courseName);
+        Map<String, String> cache = folderCaches.computeIfAbsent(sessionId, k -> new HashMap<>());
+        if (cache.containsKey(safe)) return cache.get(safe);
 
         FileList existing = drive.files().list()
                 .setQ("name = '" + safe + "' "
                         + "and '" + rootId + "' in parents "
                         + "and mimeType = 'application/vnd.google-apps.folder' "
                         + "and trashed = false")
-                .setFields("files(id)")
-                .execute();
+                .setFields("files(id)").execute();
 
-        String folderId;
+        String id;
         if (!existing.getFiles().isEmpty()) {
-            folderId = existing.getFiles().get(0).getId();
+            id = existing.getFiles().get(0).getId();
         } else {
             File meta = new File();
             meta.setName(safe);
             meta.setMimeType("application/vnd.google-apps.folder");
             meta.setParents(Collections.singletonList(rootId));
-            folderId = drive.files().create(meta).setFields("id").execute().getId();
-            System.out.println("[GoogleDriveService] Created course folder: " + safe);
+            id = drive.files().create(meta).setFields("id").execute().getId();
+            System.out.println("[Drive] Created course folder: " + safe);
         }
 
-        folderIdCache.put(safe, folderId);
-        return folderId;
+        cache.put(safe, id);
+        return id;
     }
 
-    // returns just file names in a folder, used for duplicate checking
     private Set<String> listFileNamesInFolder(Drive drive, String folderId) throws Exception {
         FileList result = drive.files().list()
                 .setQ("'" + folderId + "' in parents and trashed = false")
-                .setFields("files(name)")
-                .execute();
-
+                .setFields("files(name)").execute();
         Set<String> names = new HashSet<>();
         for (File f : result.getFiles()) names.add(f.getName());
         return names;
     }
 
-    // strips illegal chars from folder/file names
     private String sanitize(String name) {
         return name.replaceAll("[\\/:*?\"<>|\\\\]", "_").trim();
     }
 
-    // upload result summary sent back to frontend
-    public record UploadResult(String courseName, int uploaded, int skipped, int failed) {}
+    // Records
 
-    // basic file info for listing drive contents
+    public record UploadResult(String courseName, int uploaded, int skipped, int failed) {}
     public record DriveFileInfo(String id, String name, long size, String webViewLink, String mimeType) {}
 }

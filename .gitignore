@@ -5,3 +5,5 @@
 # Build directories
 /target/
 /out/
+src/main/resources/credentials.json
+tokens/
