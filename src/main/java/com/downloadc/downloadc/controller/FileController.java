@@ -69,7 +69,8 @@ public class FileController {
         boolean uploadToDrive = saveOption.equals("drive") || saveOption.equals("both");
 
         // Drive validation
-        if (uploadToDrive && !driveService.isAuthorized()) {
+        String sessionId = "default";
+        if (uploadToDrive && !driveService.isAuthorized(sessionId)) {
             return ResponseEntity.status(400).body(Map.of(
                     "error", "Google Drive not connected. Click 'Connect Drive' in the Drive banner first."));
         }
@@ -116,19 +117,12 @@ public class FileController {
 
                 if (uploadToDrive) {
                     try {
-                        driveService.uploadFile(
-                                "downloads/" + sanitize(file.getCourseName())
-                                        + "/" + sanitize(file.getFileName()),
-                                file.getCourseName()
-                        );
-                        driveUploaded++;
-                        System.out.println("Uploaded to Drive: " + file.getFileName());
+                        GoogleDriveService.UploadResult uploadResult = driveService.uploadCourse(sessionId, shortName);
+                        driveUploaded = uploadResult.uploaded();
+                        driveFailed   = uploadResult.failed();
                     } catch (Exception e) {
-                        
-                        
-                    driveFailed++;
-                        System.out.println("Drive Failed : "
-                                + file.getFileName() + " — " + e.getMessage());
+                        System.out.println("Drive upload failed: " + e.getMessage());
+                        driveFailed = files.size();
                     }
                 }
             }
