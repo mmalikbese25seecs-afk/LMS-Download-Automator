@@ -1,7 +1,8 @@
 package com.downloadc.downloadc.controller;
-
+ 
 import com.downloadc.downloadc.api.DownloadHistoryService;
 import com.downloadc.downloadc.api.FileService;
+import com.downloadc.downloadc.api.GoogleDriveService;
 import com.downloadc.downloadc.api.MoodleApiClient;
 import com.downloadc.downloadc.config.SessionManager;
 import com.downloadc.downloadc.downloader.FileDownloader;
@@ -11,7 +12,7 @@ import com.downloadc.downloadc.model.DownloadStatus;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
+ 
 import java.util.List;
 import java.util.Map;
 
@@ -26,6 +27,9 @@ public class FileController {
     @Autowired
     private DownloadHistoryService historyService;
 
+        @Autowired
+    private GoogleDriveService driveService;
+    
     // Get all files for a course
     @GetMapping("/courses/{courseId}/files")
     public ResponseEntity<?> getFilesForCourse(@PathVariable int courseId) {
@@ -61,54 +65,99 @@ public class FileController {
         if (!sessionManager.isLoggedIn())
             return ResponseEntity.status(401).body(Map.of("error", "Not logged in."));
 
+        String saveOption = body.getOrDefault("saveOption", "device").toLowerCase();
+        boolean uploadToDrive = saveOption.equals("drive") || saveOption.equals("both");
+
+        // Drive validation
+        if (uploadToDrive && !driveService.isAuthorized()) {
+            return ResponseEntity.status(400).body(Map.of(
+                    "error", "Google Drive not connected. Click 'Connect Drive' in the Drive banner first."));
+        }
+
         try {
-            // setup api + downloader
+            // setup api and downloader
+            
             MoodleApiClient apiClient = new MoodleApiClient(sessionManager.getActiveConfig());
             FileService fileService = new FileService(apiClient);
-            FileDownloader fileDownloader = new FileDownloader(
-                    sessionManager.getActiveConfig(), historyService);
+            FileDownloader fileDownloader = new FileDownloader(sessionManager.getActiveConfig(), historyService);
 
-            // get course name
+            // get Course name
             String shortName = body.getOrDefault("shortName", String.valueOf(courseId));
             Course course = new Course(courseId, "", shortName, "");
 
-            // get all files
+            // Get all files
             List<CourseFile> files = fileService.getFilesForCourse(course);
 
-            // counters
+            // Counters
             int downloaded = 0, updated = 0, resumed = 0, skipped = 0, failed = 0;
+            int driveUploaded = 0, driveFailed = 0;
 
             // loop through files
             for (CourseFile file : files) {
+                DownloadStatus result;
+
                 try {
                     // call downloader and count result
-                    switch (fileDownloader.download(file)) {
-                        case DOWNLOADED -> downloaded++;
-                        case UPDATED    -> updated++;
-                        case RESUMED    -> resumed++;
-                        case SKIPPED    -> skipped++;
-                        case FAILED     -> failed++;
-                    }
+                    result = fileDownloader.download(file);
                 } catch (Exception e) {
                     failed++;
-                    System.out.println("Failed : "
-                            + file.getFileName() + " — " + e.getMessage());
+                    System.out.println("Failed : "+ file.getFileName() + " — " + e.getMessage());
+                    continue;
+                }
+
+                // added: proper switch using result
+                switch (result) {
+                    case DOWNLOADED -> downloaded++;
+                    case UPDATED -> updated++;
+                    case RESUMED-> resumed++;
+                    case SKIPPED -> skipped++;
+                    case FAILED -> failed++;
+                }
+
+                if (uploadToDrive) {
+                    try {
+                        driveService.uploadFile(
+                                "downloads/" + sanitize(file.getCourseName())
+                                        + "/" + sanitize(file.getFileName()),
+                                file.getCourseName()
+                        );
+                        driveUploaded++;
+                        System.out.println("Uploaded to Drive: " + file.getFileName());
+                    } catch (Exception e) {
+                        
+                        
+                    driveFailed++;
+                        System.out.println("Drive Failed : "
+                                + file.getFileName() + " — " + e.getMessage());
+                    }
                 }
             }
 
-            // return summary
-            return ResponseEntity.ok(Map.of(
-                    "courseId",    courseId,
-                    "totalFiles",  files.size(),
-                    "downloaded",  downloaded,
-                    "updated",     updated,
-                    "resumed",     resumed,
-                    "skipped",     skipped,
-                    "failed",      failed
-            ));
+            // added: extended response
+            Map<String, Object> response = new java.util.HashMap<>();
+            response.put("courseId", courseId);
+            response.put("totalFiles", files.size());
+            response.put("downloaded", downloaded);
+            response.put("updated", updated);
+            response.put("resumed", resumed);
+            response.put("skipped", skipped);
+            response.put("failed", failed);
+            response.put("saveOption", saveOption);
+
+            if (uploadToDrive) {
+                response.put("driveUploaded", driveUploaded);
+                response.put("driveFailed", driveFailed);
+            }
+
+            return ResponseEntity.ok(response);
 
         } catch (Exception e) {
             return ResponseEntity.status(500).body(Map.of("Error", e.getMessage()));
         }
+    }
+
+    // added: sanitize method
+    private String sanitize(String name) {
+        return name.replaceAll("[\\/:*?\"<>|\\\\]", "_").trim();
     }
 }
